@@ -1,0 +1,15 @@
+{
+  "minimum-stability": "dev",
+  "name": "acanTeam/lightFrame",
+  "description": "A light framework based the PHP5.3+",
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "PHP5.3+",
+    "Light Frame"
+  ],
+  "homepage": "http://www.acanstudio.com/",
+  "require": {
+    "php": ">=5.3.3",
+    "acan-team/light-frame": "*"
+  }
+}
