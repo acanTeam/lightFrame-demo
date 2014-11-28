@@ -8,13 +8,13 @@ if (file_exists('vendor/autoload.php')) {
 
 // Prepare app
 $app = new \Light\Mvc\Application(array(
-    'templates.path' => './module/Application/Views',
+    'templates.path' => array('./module/Application/Views'),
 ));
 
 // Define routes
 $app->get('/', function () use ($app) {
     // Sample log message
-    $app->log->info("Slim-Skeleton '/' route");
+    $app->logger->info("Slim-Skeleton '/' route");
     // Render index view
     $app->render('index.html');
 });
