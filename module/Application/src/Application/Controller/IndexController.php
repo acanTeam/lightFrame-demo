@@ -5,7 +5,7 @@ class IndexController
 {
     public function __construct()
     {
-        echo 'init index';
+        //echo 'init index';
     }
 
     public function hello()

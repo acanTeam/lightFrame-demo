@@ -9,6 +9,6 @@ return array(
         'Application',
         'Spider',
         'Document',
-        'SmallCode',
+        'Codelib',
     ),
 );
