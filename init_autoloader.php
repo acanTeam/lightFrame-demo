@@ -8,7 +8,9 @@ if (file_exists('vendor/autoload.php')) {
 
 $configs = dealApplications($loader);
 $app = new \Light\Mvc\Application($configs['baseConfig']);
-new \Application\Controller\IndexController();
+$app->routeInfos = $configs['routeInfos'];
+$app->configCommon = require './config/local.config.php';
+
 foreach ($configs['routeInfos'] as $module => $routes) {
     if (!is_array($routes) || empty($routes)) {
         continue ;
