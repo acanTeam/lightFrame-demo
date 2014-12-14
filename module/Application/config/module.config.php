@@ -9,8 +9,9 @@ return array(
         }),
         'map' => array('/map', function() {
             $application = \Light\Mvc\Application::getInstance();
-            $application->render('map.php', array('application' => $application));
+            $application->layout('map', 'common/layout', array('application' => $application));
         }),
+        'bootstrap' => array('/bootstrap/:template', '\Application\Controller\IndexController:bootstrap'),
         'hello' => array('/hello', '\Application\Controller\IndexController:hello'),
         'world' => array('/world', '\Application\Controller\IndexController:world'),
     ),

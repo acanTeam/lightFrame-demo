@@ -13,7 +13,15 @@ class IndexController extends ControllerAbstract
 
     public function map()
     {
-        $this->application->render('map.html');
+        $this->application->render('map');
+    }
+
+    public function bootstrap($template)
+    {
+        $params = func_get_args();
+        $template = $params[0];
+
+        $this->application->layout('bootstrap/' . $template, 'common/layout', array('application' => $this->application));
     }
 
     public function hello()
