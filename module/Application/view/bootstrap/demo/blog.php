@@ -132,3 +132,4 @@
     <a href="#">Back to top</a>
   </p>
 </footer>
+<?php $application->render('common/js_base', array('application' => $application)); ?>

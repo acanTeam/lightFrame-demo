@@ -11,8 +11,9 @@ return array(
             $application = \Light\Mvc\Application::getInstance();
             $application->layout('map', 'common/layout', array('application' => $application));
         }),
-        'bootstrap' => array('/bootstrap/:template', '\Application\Controller\IndexController:bootstrap'),
-        'hello' => array('/hello', '\Application\Controller\IndexController:hello'),
-        'world' => array('/world', '\Application\Controller\IndexController:world'),
+        'bootstrapdemo' => array('/bootstrap/demo', '\Application\Controller\BootstrapController:demo'),
+        'bootstrapdemoshow' => array('/bootstrap/demo/:demo', '\Application\Controller\BootstrapController:demo'),
+        'bootstrapexample' => array('/bootstrap/example', '\Application\Controller\BootstrapController:example'),
+        'bootstrapexampleshow' => array('/bootstrap/example/:example', '\Application\Controller\BootstrapController:example'),
     ),
 );
