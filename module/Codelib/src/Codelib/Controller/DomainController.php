@@ -1,152 +1,177 @@
 <?php
 namespace Codelib\Controller;
 
-class DomainController 
+use \Light\Mvc\Controller\ControllerAbstract as ControllerAbstract;
+
+class DomainController extends ControllerAbstract
 {
     public function __construct()
     {
-        echo 'init domain';
+        parent::__construct();
+
+        //http://frame.91zuiai.biz/codelib/domain/local
+        //http://frame.91zuiai.com/codelib/domain/remote
+        //php /var/htmlwww/acanstudio/commandConfigShell/php/smallcode/createDomain.php
     }
 
     public function index()
     {
-//http://localhost/acanstudio/commandConfigShell/php/smallcode/createDomain.php?isLocal=is_local
-//php /var/htmlwww/acanstudio/commandConfigShell/php/smallcode/createDomain.php
-$isLocal = isset($_GET['isLocal']) ? $_GET['isLocal'] : '';
-$isLocal = $isLocal == 'is_local' ? true : false;
-$baseInfo = getBaseInfo($isLocal);
+        $params = func_get_args();
+        $type = isset($params[0]) ? $params[0] : '';
+        if (in_array($type, array('local', 'remote'))) {
+            $method = $type . 'Method';
+            $this->$method();
+        }
 
-$textInfos = getTextInfos($isLocal);
-$baseStr = str_replace(array('#PLACE_IP#', '#PLACE_WWW_PATH#', "\r"), array($baseInfo['ip'], $baseInfo['wwwPath'], ''), $textInfos['baseStr']) . "\n";
-$domains = getDomains();
-$hosts = "127.0.0.1    localhost\n";
-
-foreach ($domains as $domainBase => $infos) {
-    $domain = $domainBase . $baseInfo['topDomain'];
-    $domainStr = '';
-    $isBase = in_array($domainBase, $baseInfo['baseDomain']);
-    $domainStr = str_replace(array("\r", '#PLACE_DOMAIN_BASE#'), array('', $domain), $textInfos['baseDomain']) . "\n";
-        
-    foreach ($infos as $key => $info) {
-        $fullDomain = $key . '.' . $domain;
-        $hosts .= "127.0.0.1    {$fullDomain}\n";
-        $domainStrSub = isset($info['type']) && ($info['type'] == 'node') ? $textInfos['nodeDomain'] : $textInfos['commonDomain'];
-        $placeInfos = array("\r", '#PLACE_DOMAIN#', '#PLACE_DOMAIN_PATH#', '#PLACE_HTTP_PATH#', '#PLACE_LOG_PATH#', '#PLACE_NODE_PORT#', '#PLACE_EXT_INFO#');
-        $domainPath = isset($info['path']) && !empty($info['path']) ? $info['path'] : $key;
-        $trueInfos = array(
-            'r' => '',
-            'domain' => $fullDomain,
-            'domainPath' => $baseInfo['wwwPath'] . $domainPath,
-            'httpdPath' => $baseInfo['httpdPath'],
-            'logPath' => $baseInfo['logPath'],
-            'nodePort' => isset($info['port']) ? $info['port'] : '',
-            'extInfo' => isset($info['extInfo']) && isset($textInfos[$info['extInfo']]) ? $textInfos[$info['extInfo']] : '',
+        $data = array(
+            'domains' => $this->getDomains(),
+            'application' => $this->application,
         );
-        $domainStrSub = str_replace($placeInfos, $trueInfos, $domainStrSub);
-        $domainStr .= "\n" . $domainStrSub . "\n";
+
+        $this->application->layout('domain', 'common/layout', $data);
     }
 
-    if ($isBase) {
-        $baseStr .= "\n" . $domainStr;
-    } else {
-        $file = $baseInfo['httpdPath'] . 'conf/extra/httpd-vhosts-' . $domain . '.conf';
-        file_put_contents($file, $domainStr);
+    protected function localMethod()
+    {
+        $baseInfo = array(
+            'topDomain' => '.biz',
+            'baseDomain' => array('iammumu', 'julymom'),
+            'ip' => 'localhost',
+            'wwwPath' => 'e:/www/',
+            'httpdPath' => 'e:/tmp/',//'e:/xampp/apache/',
+            'logPath' => 'e:/xampp/apache/logs/',
+        );
+        $textInfos = getTextInfos(true);
+
+        $this->createDomain($baseInfo, $textInfos);
     }
-    $hosts .= "\n";
-} 
-
-$baseFile = $baseInfo['httpdPath'] . 'conf/extra/httpd-vhosts.conf';
-file_put_contents($baseFile, $baseStr);
-$hostFile = $baseInfo['httpdPath'] . 'conf/hosts';
-file_put_contents($hostFile, $hosts);
-
+       
+    protected function remoteMethod()
+    {
+        $baseInfo = array(
+            'topDomain' => '.com',
+            'baseDomain' => array('iammumu', 'julymom'),
+            'ip' => '42.96.170.56',
+            'wwwPath' => '/var/htmlwww/',
+            'httpdPath' => '/opt/soft/httpd/',
+            'logPath' => '/var/slog/httpd/logs/',
+        );
+        $textInfos = getTextInfos(true);
+        
+        $this->createDomain($baseInfo, $textInfos);
     }
-
-function getBaseInfo($isLocal)
-{
-
-    $local = array(
-        'topDomain' => '.biz',
-        'baseDomain' => array('iammumu', 'julymom'),
-        'ip' => 'localhost',
-        'wwwPath' => 'e:/www/',
-        'httpdPath' => 'e:/xampp/apache/',
-        'logPath' => 'e:/xampp/apache/logs/',
-    );
-
-    $online = array(
-        'topDomain' => '.com',
-        'baseDomain' => array('iammumu', 'julymom'),
-        'ip' => '42.96.170.56',
-        'wwwPath' => '/var/htmlwww/',
-        'httpdPath' => '/opt/soft/httpd/',
-        'logPath' => '/var/slog/httpd/logs/',
-    );
     
-    $baseInfo = $isLocal ? $local : $online;
-    return $baseInfo;
+    protected function createDomain($baseInfo, $textInfos)
+    {
+        $baseReplace = array(
+            '#PLACE_IP#' => $baseInfo['ip'],
+            '#PLACE_WWW_PATH#' => $baseInfo['wwwPath'],
+            "\r" => '',
+        );
+        $baseStr = str_replace(array_keys($baseReplace), array_values($baseReplace), $textInfos['baseStr']) . "\n";
+        $hosts = "127.0.0.1    localhost\n";
+        
+        $domains = $this->getDomains();
+        foreach ($domains as $domainBase => $infos) {
+            $domain = $domainBase . $baseInfo['topDomain'];
+            $domainStr = '';
+            $isBase = in_array($domainBase, $baseInfo['baseDomain']);
+            $domainStr = str_replace(array("\r", '#PLACE_DOMAIN_BASE#'), array('', $domain), $textInfos['baseDomain']) . "\n";
+                
+            foreach ($infos as $key => $info) {
+                $fullDomain = $key . '.' . $domain;
+                $hosts .= "127.0.0.1    {$fullDomain}\n";
+                $domainStrSub = isset($info['type']) && ($info['type'] == 'node') ? $textInfos['nodeDomain'] : $textInfos['commonDomain'];
+                $domainPath = isset($info['path']) && !empty($info['path']) ? $info['path'] : $key;
+                $replaceInfos = array(
+                    "\r" => '',
+                    '#PLACE_DOMAIN#' => $fullDomain,
+                    '#PLACE_DOMAIN_PATH#' => $baseInfo['wwwPath'] . $domainPath,
+                    '#PLACE_HTTP_PATH#' => $baseInfo['httpdPath'],
+                    '#PLACE_LOG_PATH#' => $baseInfo['logPath'],
+                    '#PLACE_NODE_PORT#' => isset($info['port']) ? $info['port'] : '',
+                    '#PLACE_EXT_INFO#' => isset($info['extInfo']) && isset($textInfos[$info['extInfo']]) ? $textInfos[$info['extInfo']] : '',
+                );
+                $domainStrSub = str_replace(array_keys($replaceInfos), array_values($replaceInfos), $domainStrSub);
+                $domainStrSub = str_replace("\r", '', $domainStrSub);
+                $domainStr .= "\n" . $domainStrSub . "\n";
+            }
+        
+            if ($isBase) {
+                $baseStr .= "\n" . $domainStr;
+            } else {
+                $file = $baseInfo['httpdPath'] . 'conf/extra/httpd-vhosts-' . $domain . '.conf';
+                file_put_contents($file, $domainStr);
+            }
+            $hosts .= "\n";
+        } 
+        
+        $baseFile = $baseInfo['httpdPath'] . 'conf/extra/httpd-vhosts.conf';
+        file_put_contents($baseFile, $baseStr);
+        $hostFile = $baseInfo['httpdPath'] . 'conf/hosts';
+        file_put_contents($hostFile, $hosts);
+    }
+
+    protected function getDomains()
+    {
+        //'www' => array('path' => '', 'type' => '', 'port' => '', 'extInfo' => '')
+        $domains = array(
+            'iammumu' => array(
+                'www' => array('path' => 'common', 'extInfo' => 'iammumuExt'),
+            ),
+            'julymom' => array(
+                'www' => array('path' => 'common'),
+            ),
+            '91zuiai' => array(
+                'dev.frame' => array('path' => 'acanstudio/devFrame/example'),
+                'dev.node' => array('path' => 'acanstudio/firstNode', 'type' => 'node'),
+                'node' => array('path' => 'wangcan/nodeProject', 'type' => 'node'),
+                'dev.zf2' => array('path' => 'wangcan/devZf2'),
+                'frame' => array('path' => 'wangcan/lightFrame-demo/public'),
+                'zf2' => array('path' => 'wangcan/zf2Project/public'),
+                'www' => array('path' => 'common'),
+            ),
+            'alyee' => array(
+                //'*.test' => array('path' => ''),
+                'dev.statistic' => array('path' => 'wangcan/ciProject/wwwroot/statistic'),
+                'dev.pay' => array('path' => 'wangcan/ciProject/wwwroot/pay'),
+                'dev.jzmedia' => array('path' => 'wangcan/ciProject/wwwroot/jzmedia'),
+                'dev.passport' => array('path' => 'wangcan/ciProject/wwwroot/passport'),
+                'dev.luxury' => array('path' => 'wangcan/ciProject/wwwroot/luxury'),
+                'dev.www' => array('path' => 'wangcan/ciProject/wwwroot'),
+            ),
+            'acanstudio' => array(
+                'front' => array('path' => 'acanstudio/webFront'),
+                'ucserver' => array('path' => 'common/ucserver'),
+                'static' => array('path' => 'common/static'),
+                'asset' => array('path' => 'common/asset'),
+                'upload' => array('path' => 'common/upload'),
+                'dphp' => array('path' => 'common/dphp'),
+                'www' => array('path' => 'common'),
+                'docs' => array('path' => 'final/docsold', 'extInfo' => 'rewriteDocs'),
+                'blog' => array('path' => 'acanstudio/blog/public'),
+    
+                'test1' => array('path' => 'test/test1/public'),
+                'test2' => array('path' => 'test/test2/public'),
+                'test3' => array('path' => 'test/test3'),
+    
+                'demo.luxury' => array('path' => 'final/ciProject/wwwroot/luxury'),
+                'demo.statistic' => array('path' => 'final/ciProject/wwwroot/statistic'),
+                'demo.ucserver' => array('path' => 'final/ciProject/wwwroot/ucserver'),
+                'demo.upload' => array('path' => 'final/ciProject/wwwroot/upload'),
+                'demo.static' => array('path' => 'final/ciProject/wwwroot/static'),
+                'demo.pay' => array('path' => 'final/ciProject/wwwroot/pay'),
+                'demo.jzmedia' => array('path' => 'final/ciProject/wwwroot/jzmedia'),
+                'demo.passport' => array('path' => 'final/ciProject/wwwroot/passport'),
+            ),
+        );
+    
+        return $domains;
+    }
 }
-
-function getDomains()
+    
+function getTextInfos($isLocal = false)
 {
-    //'www' => array('path' => '', 'type' => '', 'port' => '', 'extInfo' => '')
-    $domains = array(
-        'iammumu' => array(
-            'www' => array('path' => 'common', 'extInfo' => 'iammumuExt'),
-        ),
-        'julymom' => array(
-            'www' => array('path' => 'common'),
-        ),
-        '91zuiai' => array(
-            'dev.frame' => array('path' => 'acanstudio/devFrame/example'),
-            'dev.node' => array('path' => 'acanstudio/firstNode', 'type' => 'node'),
-            'node' => array('path' => 'wangcan/nodeProject', 'type' => 'node'),
-            'dev.zf2' => array('path' => 'wangcan/devZf2'),
-            'frame' => array('path' => 'wangcan/lightFrame-demo/public'),
-            'zf2' => array('path' => 'wangcan/zf2Project/public'),
-            'www' => array('path' => 'common'),
-        ),
-        'alyee' => array(
-            //'*.test' => array('path' => ''),
-            'dev.statistic' => array('path' => 'wangcan/ciProject/wwwroot/statistic'),
-            'dev.pay' => array('path' => 'wangcan/ciProject/wwwroot/pay'),
-            'dev.jzmedia' => array('path' => 'wangcan/ciProject/wwwroot/jzmedia'),
-            'dev.passport' => array('path' => 'wangcan/ciProject/wwwroot/passport'),
-            'dev.luxury' => array('path' => 'wangcan/ciProject/wwwroot/luxury'),
-            'dev.www' => array('path' => 'wangcan/ciProject/wwwroot'),
-        ),
-        'acanstudio' => array(
-            'front' => array('path' => 'acanstudio/webFront'),
-            'ucserver' => array('path' => 'common/ucserver'),
-            'static' => array('path' => 'common/static'),
-            'asset' => array('path' => 'common/asset'),
-            'upload' => array('path' => 'common/upload'),
-            'dphp' => array('path' => 'common/dphp'),
-            'www' => array('path' => 'common'),
-            'docs' => array('path' => 'final/docsold', 'extInfo' => 'rewriteDocs'),
-            'blog' => array('path' => 'acanstudio/blog/public'),
-
-            'test1' => array('path' => 'test/test1/public'),
-            'test2' => array('path' => 'test/test2/public'),
-            'test3' => array('path' => 'test/test3'),
-
-            'demo.luxury' => array('path' => 'final/ciProject/wwwroot/luxury'),
-            'demo.statistic' => array('path' => 'final/ciProject/wwwroot/statistic'),
-            'demo.ucserver' => array('path' => 'final/ciProject/wwwroot/ucserver'),
-            'demo.upload' => array('path' => 'final/ciProject/wwwroot/upload'),
-            'demo.static' => array('path' => 'final/ciProject/wwwroot/static'),
-            'demo.pay' => array('path' => 'final/ciProject/wwwroot/pay'),
-            'demo.jzmedia' => array('path' => 'final/ciProject/wwwroot/jzmedia'),
-            'demo.passport' => array('path' => 'final/ciProject/wwwroot/passport'),
-        ),
-    );
-
-    return $domains;
-}
-
-function getTextInfos($isLocal)
-{
-
 $baseStr = <<<BASESTR
 ServerName 127.0.0.1:80
 
@@ -220,8 +245,14 @@ $rewriteDocs = <<<REWRITEDOCS
     RewriteRule   ^/([^/]+)/?(.*)    /$1/_build/html/$2
 REWRITEDOCS;
 
-$textInfos = array('baseStr' => $baseStr, 'baseDomain' => $baseDomain, 'commonDomain' => $commonDomain, 'nodeDomain' => $nodeDomain, 'iammumuExt' => $iammumuExt, 'rewriteDocs' => $rewriteDocs);
+$textInfos = array(
+    'baseStr' => $baseStr, 
+    'baseDomain' => $baseDomain, 
+    'commonDomain' => $commonDomain, 
+    'nodeDomain' => $nodeDomain,
+    'iammumuExt' => $iammumuExt, 
+    'rewriteDocs' => $rewriteDocs
+);
 
 return $textInfos;
 }    
-}
