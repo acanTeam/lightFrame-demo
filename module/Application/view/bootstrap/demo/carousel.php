@@ -1,4 +1,4 @@
-<link href="<?php echo $application->configCommon['assetUrl']; ?>bootstrap/demo/css/carousel.css" rel="stylesheet">
+<link href="<?php echo $application->configCommon['assetUrl'] . 'bootstrap/demo/css/' . $demo . '.css'; ?>" rel="stylesheet">
 <div class="navbar-wrapper">
   <div class="container">
 
@@ -170,3 +170,5 @@
   </footer>
 
 </div><!-- /.container -->
+<?php $application->render('common/js_base', array('application' => $application)); ?>
+<script src="<?php echo $application->configCommon['assetUrl']; ?>common/js/holder.js"></script>

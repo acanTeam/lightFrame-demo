@@ -1,4 +1,4 @@
-<link href="<?php echo $application->configCommon['assetUrl']; ?>bootstrap/demo/css/blog.css" rel="stylesheet">
+<link href="<?php echo $application->configCommon['assetUrl'] . 'bootstrap/demo/css/' . $demo . '.css'; ?>" rel="stylesheet">
 <div class="blog-masthead">
   <div class="container">
     <nav class="blog-nav">

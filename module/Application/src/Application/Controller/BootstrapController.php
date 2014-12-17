@@ -13,15 +13,16 @@ class BootstrapController extends ControllerAbstract
     public function demo()
     {
         $params = func_get_args();
-        $currentDemo = isset($params[0]) ? $params[0] : '';
+        $demo = isset($params[0]) ? $params[0] : '';
         $infos = $this->_getDemoInfos();
-        $currentDemo = in_array($currentDemo, array_keys($infos)) ? 'demo/' . $currentDemo : 'default';
+        $currentDemo = in_array($demo, array_keys($infos)) ? 'demo/' . $demo : 'default';
 
         $navbarInfos = $this->_getNavbar();
         $navbarContent = $this->_getNavbarContent($navbarInfos);
         $data = array(
             'method' => 'demo',
             'navbarContent' => $navbarContent,
+            'demo' => $demo,
             'currentDemo' => $currentDemo,
             'infos' => $infos,
             'application' => $this->application
@@ -39,93 +40,57 @@ class BootstrapController extends ControllerAbstract
     {
         $demoInfos = array(
             'blog' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ), 
             'carousel' => array(
-                'name' => '',
-                'author' => '',
-                'description' => '',
+                'description' => 'Customize the navbar and carousel, then add some new components.',
             ), 
             'cover' => array(
-                'name' => '',
-                'author' => '',
-                'description' => '',
+                'description' => 'A one-page template for building simple and beautiful home pages.',
             ), 
             'dashboard' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ), 
             'grid' => array(
-                'name' => '',
-                'author' => '',
-                'description' => '',
+                'description' => 'Multiple examples of grid layouts with all four tiers, nesting, and more.',
             ),
             'jumbotron' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ), 
             'jumbotron-narrow' => array(
-                'name' => '',
-                'author' => '',
-                'description' => '',
+                'description' => 'Build a more custom page by narrowing the default container and jumbotron.',
             ), 
             'justified-nav' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ),
             'navbar' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ), 
             'navbar-fixed-top' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ), 
             'navbar-static-top' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ),
             'non-responsive' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ), 
             'offcanvas' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ), 
             'signin' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ), 
             'starter-template' => array(
-                'name' => '',
-                'author' => '',
-                'description' => '',
+                'description' => 'Nothing but the basics: compiled CSS and JavaScript along with a container.',
             ),
             'sticky-footer' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ), 
             'sticky-footer-navbar' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ), 
             'theme' => array(
-                'name' => '',
-                'author' => '',
                 'description' => '',
             ),
         );

@@ -36,15 +36,15 @@ $description = $method == 'demo' ? 'Bootstrap入门和提升的捷径' : 'Bootst
   </div>
   <div class="row">
 
-    <?php $assetUrlNull = $application->configCommon['assetUrl'] . 'bootstrap/demo/images/null.jpg'; foreach ($infos as $key => $info) { $picture = $application->configCommon['assetUrl'] . 'bootstrap/demo/picture/' . $key . '.jpg'; ?>
+    <?php $assetUrlNull = $application->configCommon['assetUrl'] . 'bootstrap/demo/images/null.jpg'; foreach ($infos as $key => $info) { $picture = $application->configCommon['assetUrl'] . 'bootstrap/demo/picture/' . $key . '.jpg'; $info['author'] = $method == 'demo' ? 'twbs' : $info['author']; ?>
   	<div class="col-sm-6 col-md-4 col-lg-3 ">
       <div class="thumbnail">
-        <a href="demo/<?php echo $key; ?>" title="<?php echo $info['name']; ?>" target="_blank">
-        <img class="lazy" src="<?php echo $assetUrlNull; ?>" width="300" height="150" data-src="<?php echo $picture; ?>" alt="<?php echo $info['name']; ?>">
+        <a href="demo/<?php echo $key; ?>" title="<?php echo $key; ?>" target="_blank">
+        <img class="lazy" src="<?php echo $assetUrlNull; ?>" width="300" height="150" data-src="<?php echo $picture; ?>" alt="<?php echo $key; ?>">
         </a>
         <div class="caption">
           <h3> 
-            <a href="demo/<?php echo $key; ?>" title="<?php echo $info['name']; ?>" target="_blank"><?php echo $info['name']; ?><br><small>by @<?php echo $info['author']; ?></small></a>
+            <a href="demo/<?php echo $key; ?>" title="<?php echo $key; ?>" target="_blank"><?php echo $key; ?><br><small>by @<?php echo $info['author']; ?></small></a>
           </h3>
           <p><?php echo $info['description']; ?></p>
         </div>
