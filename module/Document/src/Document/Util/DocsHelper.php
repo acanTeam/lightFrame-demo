@@ -24,42 +24,46 @@ class DocsHelper
         return $request;
     }
 
-    public static function get_title_from_file($file) {
+    public static function getTitleFromFile($file) {
         $file = static::pathinfo($file);
-        return static::get_title_from_filename($file['filename']);
+        return static::getTitleFromFilename($file['filename']);
     }
 
-    public static function get_title_from_filename($filename) {
+    public static function getTitleFromFilename($filename) {
         $filename = explode('_', $filename);
-        if ($filename[0] == '' || is_numeric($filename[0])) unset($filename[0]);
-        else {
+        if ($filename[0] == '' || is_numeric($filename[0])) {
+            unset($filename[0]);
+        } else {
             $t = $filename[0];
-            if ($t[0] == '-') $filename[0] = substr($t, 1);
+            $filename[0] = $t[0] != '-' ? $filename[0] : substr($t, 1);
         }
+
         $filename = implode(' ', $filename);
         return $filename;
     }
 
-    public static function get_url_from_file($file) {
+    public static function getUrlFromFile($file) {
         $file = static::pathinfo($file);
-        return static::get_url_from_filename($file['filename']);
+        return static::getUrlFromFilename($file['filename']);
     }
 
-    public static function get_url_from_filename($filename) {
+    public static function getUrlFromFilename($filename) {
         $filename = explode('_', $filename);
-        if ($filename[0] == '' || is_numeric($filename[0])) unset($filename[0]);
-        else {
+        if ($filename[0] == '' || is_numeric($filename[0])) {
+            unset($filename[0]);
+        } else {
             $t = $filename[0];
-            if ($t[0] == '-') $filename[0] = substr($t, 1);
+            $filename[0] = $t[0] != '-' ? $filename[0] : substr($t, 1);
         }
+
         $filename = implode('_', $filename);
         return $filename;
     }
 
-    public static function build_directory_tree($dir, $ignore, $mode) {
-        return static::directory_tree_builder($dir, $ignore, $mode);
+    public static function buildDirectoryTree($dir, $ignore, $mode)
+    {
+        return static::_directoryTreeBuilder($dir, $ignore, $mode);
     }
-
 
     //Depreciated
     public static function get_request_from_url($url, $base_url) {
@@ -102,7 +106,7 @@ class DocsHelper
         return $uri;
     }
 
-    public static function configure_theme($theme, $base_url, $local_base, $theme_url, $mode = Daux::LIVE_MODE) {
+    public static function configure_theme($theme, $base_url, $local_base, $theme_url, $mode = DocsTool::LIVE_MODE) {
         $name = static::pathinfo($theme);
         if (is_file($theme)) {
             $theme = file_get_contents($theme);
@@ -111,7 +115,7 @@ class DocsHelper
         } else $theme = array();
         $theme['name'] = $name['filename'];
 
-        if ($mode === Daux::LIVE_MODE) {
+        if ($mode === DocsTool::LIVE_MODE) {
             if (!isset($theme['favicon'])) $theme['favicon'] = utf8_encode($base_url . 'img/favicon.png');
             else {
                 $theme['favicon'] = utf8_encode(str_replace('<base_url>', $base_url, $theme['favicon']));
@@ -212,36 +216,53 @@ EOT;
         return $pa;
     }
 
-    private static function directory_tree_builder($dir, $ignore, $mode = Daux::LIVE_MODE, $parents = null) {
-        if ($dh = opendir($dir)) {
-            $node = new Directory_Entry($dir, $parents);
-            $new_parents = $parents;
-            if (is_null($new_parents)) $new_parents = array();
-            else $new_parents[] = $node;
-            while (($entry = readdir($dh)) !== false) {
-                if ($entry == '.' || $entry == '..') continue;
-                $path = $dir . DIRECTORY_SEPARATOR . $entry;
-                if (is_dir($path) && in_array($entry, $ignore['folders'])) continue;
-                if (!is_dir($path) && in_array($entry, $ignore['files'])) continue;
-
-                $file_details = static::pathinfo($path);
-                if (is_dir($path)) $entry = static::directory_tree_builder($path, $ignore, $mode, $new_parents);
-                else if (in_array($file_details['extension'], Daux::$VALID_MARKDOWN_EXTENSIONS))
-                {
-                    $entry = new Directory_Entry($path, $new_parents);
-                    if ($mode === Daux::STATIC_MODE) $entry->uri .= '.html';
-                }
-                if ($entry instanceof Directory_Entry) $node->value[$entry->uri] = $entry;
-            }
-            $node->sort();
-            $node->first_page = $node->get_first_page();
-            $index_key = ($mode === Daux::LIVE_MODE) ? 'index' : 'index.html';
-            if (isset($node->value[$index_key])) {
-                $node->value[$index_key]->first_page = $node->first_page;
-                $node->index_page =  $node->value[$index_key];
-            } else $node->index_page = false;
-            return $node;
+    private static function _directoryTreeBuilder($dir, $ignore, $mode = null, $parents = null)
+    {
+        $dirHandler = opendir($dir);
+        if (!$dirHandler) {
+            return ;
         }
+
+        $mode = $mode === null ? DocsTool::LIVE_MODE : $mode;
+        $directoryEntry = new DirectoryEntry($dir, $parents);
+        $newParents = $parents;
+        $newParents = is_null($newParents) ? array() : $directoryEntry;
+
+        while (($entry = readdir($dirHandler)) !== false) {
+            if ($entry == '.' || $entry == '..') {
+                continue;
+            }
+
+            $path = $dir . DIRECTORY_SEPARATOR . $entry;
+            if (is_dir($path) && in_array($entry, $ignore['folders'])) {
+                continue;
+            }
+            if (!is_dir($path) && in_array($entry, $ignore['files'])) {
+                continue;
+            }
+
+            $fileDetails = static::pathinfo($path);
+            if (is_dir($path)) {
+                $entry = static::_directoryTreeBuilder($path, $ignore, $mode, $newParents);
+            } else if (isset($fileDetails['extension']) && in_array($fileDetails['extension'], DocsTool::$VALID_MARKDOWN_EXTENSIONS)) {
+                $entry = new DirectoryEntry($path, $newParents);
+                if ($mode === DocsTool::STATIC_MODE) {
+                    $entry->uri .= '.html';
+                }
+            }
+
+            if ($entry instanceof DirectoryEntry) {
+                $directoryEntry->value[$entry->uri] = $entry;
+            }
+        }
+        $directoryEntry->sort();
+        $directoryEntry->firstPage = $directoryEntry->getFirstPage();
+        $index_key = ($mode === DocsTool::LIVE_MODE) ? 'index' : 'index.html';
+        if (isset($directoryEntry->value[$index_key])) {
+            $directoryEntry->value[$index_key]->firstPage = $directoryEntry->firstPage;
+            $directoryEntry->index_page =  $directoryEntry->value[$index_key];
+        } else $directoryEntry->index_page = false;
+        return $directoryEntry;
     }
 
     public static function pathinfo($path) {

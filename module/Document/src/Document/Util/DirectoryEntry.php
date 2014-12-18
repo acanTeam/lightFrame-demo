@@ -5,32 +5,38 @@ class DirectoryEntry
 {
     const FILE_TYPE = 'FILE_TYPE';
     const DIRECTORY_TYPE = 'DIRECTORY_TYPE';
+
     public $name;
     public $title;
     public $type;
-    public $index_page;
-    public $first_page;
+    public $indexPage;
+    public $firstPage;
     public $value;
     public $uri;
-    public $local_path;
-    public $last_modified;
+    public $localPath;
+    public $lastModified;
     public $parents;
 
-    function __construct($path = '', $parents = array()) {
-        if (!isset($path) || $path == '' || !file_exists($path)) return;
-        $this->local_path = $path;
+    public function __construct($path = '', $parents = array())
+    {
+        if (!isset($path) || $path == '' || !file_exists($path)) {
+            return;
+        }
+
+        $this->localPath = $path;
         $this->parents = $parents;
-        $this->last_modified = filemtime($path);
-        $this->name = DauxHelper::pathinfo($path);
+        $this->lastModified = filemtime($path);
+        $this->name = DocsHelper::pathinfo($path);
         $this->name = $this->name['filename'];
-        $this->title = DauxHelper::get_title_from_file($this->name);
-        $this->uri = DauxHelper::get_url_from_filename($this->name);
-        $this->index_page = false;
+        $this->title = DocsHelper::getTitleFromFile($this->name);
+        $this->uri = DocsHelper::getUrlFromFilename($this->name);
+        $this->indexPage = false;
+
         if (is_dir($path)) {
-            $this->type = Directory_Entry::DIRECTORY_TYPE;
+            $this->type = self::DIRECTORY_TYPE;
             $this->value = array();
         } else {
-            $this->type = Directory_Entry::FILE_TYPE;
+            $this->type = self::FILE_TYPE;
             $this->value = $this->uri;
         }
     }
@@ -48,17 +54,17 @@ class DirectoryEntry
                 else {
                     if ($node === 'index' || $node === 'index.html') {
                         if ($get_first_file) {
-                            return ($tree->index_page) ? $tree->index_page : $tree->first_page;
+                            return ($tree->indexPage) ? $tree->indexPage : $tree->firstPage;
                         } else {
-                            return $tree->index_page;
+                            return $tree->indexPage;
                         }
                     } else return false;
                 }
             } else return false;
         }
         if ($tree->type === static::DIRECTORY_TYPE) {
-            if ($tree->index_page) return $tree->index_page;
-            else return ($get_first_file) ? $tree->first_page : false;
+            if ($tree->indexPage) return $tree->indexPage;
+            else return ($get_first_file) ? $tree->firstPage : false;
         } else {
             return $tree;
         }
@@ -73,14 +79,14 @@ class DirectoryEntry
         return $url;
     }
 
-    public function get_first_page() {
+    public function getFirstPage() {
         foreach ($this->value as $node) {
             if ($node->type === static::FILE_TYPE && $node->title != 'index')
                 return $node;
         }
         foreach ($this->value as $node) {
             if ($node->type === static::DIRECTORY_TYPE) {
-                $page = $node->get_first_page();
+                $page = $node->getFirstPage();
                 if ($page) return $page;
             }
         }
@@ -88,7 +94,7 @@ class DirectoryEntry
     }
 
     public function write($content) {
-        if (is_writable($this->local_path)) file_put_contents($this->local_path, $content);
+        if (is_writable($this->localPath)) file_put_contents($this->localPath, $content);
         else return false;
         return true;
     }
