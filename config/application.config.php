@@ -1,4 +1,6 @@
 <?php
+require dirname(__FILE__) . '/systemFunction.php';
+
 return array(
 
     'module_paths' => array(

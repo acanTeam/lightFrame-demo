@@ -36,6 +36,7 @@ function dealApplications(& $loader)
         $moduleConfigFile = '';
         foreach ($modulePaths as $modulePath) {
             $modulePathBase = $modulePath . '/' . $module;
+            $baseConfig['modulePath'][$module] = $modulePathBase;
             $loader->set($module, $modulePathBase . '/src/');
             $moduleConfigFile = $modulePathBase . '/config/module.config.php';
             if (file_exists($moduleConfigFile)) {

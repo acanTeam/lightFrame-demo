@@ -1,0 +1,22 @@
+<?php
+class #CLASS#Model extends ModelBase
+{
+    public function __construct($data = '')
+    {
+        $this->table = '#TABLE#';
+        parent::__construct($data);
+    }
+
+    /**
+     * Initial the fields for model
+     *
+     * @return array the field infos of model
+     */
+    protected function _fieldInfos()
+    {
+#FIELDINFOS#
+
+        return $fieldInfos;
+    }
+}
+
