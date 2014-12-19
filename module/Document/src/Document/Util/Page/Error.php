@@ -29,7 +29,7 @@ class Error extends Simple
     {
         if ($this->type !== static::FATAL_ERROR_TYPE && is_null(static::$template)) {
             include_once($this->params['theme']['error-template']);
-            static::$template = new Template();
+            static::$template = new \Template();
         }
 
         if (is_null($this->html)) {

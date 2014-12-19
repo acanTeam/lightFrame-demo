@@ -1,5 +1,7 @@
 <?php
 
+namespace Document\Util;
+
 #
 #
 # Parsedown

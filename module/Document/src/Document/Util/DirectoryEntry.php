@@ -45,29 +45,33 @@ class DirectoryEntry
         if ($this->type == static::DIRECTORY_TYPE) uasort($this->value, array($this, 'compare_directory_entries'));
     }
 
-    public function retrieve_file($request, $get_first_file = false) {
+    public function retrieveFile($request, $getFirstFile = false)
+    {
         $tree = $this;
+        if ($tree->type !== static::DIRECTORY_TYPE) {
+            $return  = $tree->type === static::FILE_TYPE ? $tree : false;
+            return $return;
+        }
+
         $request = explode('/', $request);
         foreach ($request as $node) {
-            if ($tree->type === static::DIRECTORY_TYPE) {
-                if (isset($tree->value[$node])) $tree = $tree->value[$node];
-                else {
-                    if ($node === 'index' || $node === 'index.html') {
-                        if ($get_first_file) {
-                            return ($tree->indexPage) ? $tree->indexPage : $tree->firstPage;
-                        } else {
-                            return $tree->indexPage;
-                        }
-                    } else return false;
+            if ($tree->type !== static::DIRECTORY_TYPE) {
+                return false;
+            }
+
+            if (isset($tree->value[$node])) {
+                $tree = $tree->value[$node];
+            } else {
+                $return = false;
+                if ($node === 'index' || $node === 'index.html') {
+                    $return = $getFirstFile ? ($tree->indexPage ? $tree->indexPage : $tree->firstPage) : $tree->indexPage;
                 }
-            } else return false;
+                return $return;
+            }
         }
-        if ($tree->type === static::DIRECTORY_TYPE) {
-            if ($tree->indexPage) return $tree->indexPage;
-            else return ($get_first_file) ? $tree->firstPage : false;
-        } else {
-            return $tree;
-        }
+
+        $return = $tree->type === static::DIRECTORY_TYPE ? ($tree->indexPage ? $tree->indexPage : ($getFirstFile ? $tree->firstPage : false)) : $tree;
+        return $return;
     }
 
     public function get_url() {

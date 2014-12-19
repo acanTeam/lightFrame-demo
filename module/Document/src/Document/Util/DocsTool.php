@@ -1,11 +1,8 @@
 <?php
 namespace Document\Util;
-//require_once(dirname(__FILE__) . '/../vendor/autoload.php');
-//require_once('daux_directory.php');
-//require_once('daux_helper.php');
-//require_once('daux_page.php');
 
 use Document\Util\Page\Error as ErrorPage;
+use Document\Util\Page\Markdown as MarkdownPage;
 
 class DocsTool
 {
@@ -40,7 +37,9 @@ class DocsTool
 
         $this->_loadDocsConfig($configFile);
         $this->_generateDirectoryTree();
-        if (!$this->error) $this->params = $this->get_page_params();
+        if (!$this->error) {
+            $this->params = $this->_getPageParams();
+        }
     }
 
     public function generate_static($output_dir = NULL) {
@@ -49,26 +48,33 @@ class DocsTool
         $this->recursive_generate_static($this->tree, $output_dir, $this->params);
     }
 
-    public function handle_request($url, $query = array()) {
-        if ($this->error) return $this->errorPage;
-        if (!$this->params['clean_urls']) $this->params['base_page'] .= 'index.php/';
-        $request = DocsHelper::get_request();
+    public function handleRequest($url, $query = array())
+    {
+        if ($this->error) {
+            return $this->errorPage;
+        }
+
+        if (!$this->params['clean_urls']) {
+            $this->params['base_page'] .= 'index.php/';
+        }
+
+        $request = DocsHelper::getRequest();
         $request = urldecode($request);
-        $request_type = isset($query['method']) ? $query['method'] : '';
+        $requestType = isset($query['method']) ? $query['method'] : '';
         if($request == 'first_page') {
             $request = $this->tree->firstPage->uri;
         }
-        switch ($request_type) {
-            case 'DauxEdit':
-                if ($this->options['file_editor']) {
-                    $content = isset($query['markdown']) ? $query['markdown'] : '';
-                    return $this->save_file($request, $content);
-                }
-                return $this->_generateErrorPage('Editing Disabled', 'Editing is currently disabled in config',
-                    ErrorPage::FATAL_ERROR_TYPE);
-            default:
-                return $this->get_page($request);
+
+        if ($requestType == 'DocsEdit') {
+            if ($this->options['file_editor']) {
+                $content = isset($query['markdown']) ? $query['markdown'] : '';
+                return $this->_saveFile($request, $content);
+            }
+            return $this->_generateErrorPage('Editing Disabled', 'Editing is currently disabled in config',
+                ErrorPage::FATAL_ERROR_TYPE);
         }
+
+        return $this->_getPage($request);
     }
 
     private function _initialSetup()
@@ -176,13 +182,14 @@ class DocsTool
                 $params['file_uri'] = $node->name;
 
                 $page = MarkdownPage::fromFile($node, $params);
-                file_put_contents($output_dir . DIRECTORY_SEPARATOR . $key, $page->get_page_content());
+                file_put_contents($output_dir . DIRECTORY_SEPARATOR . $key, $page->_getPage_content());
             }
         }
     }
 
-    private function save_file($request, $content) {
-        $file = $this->get_file_from_request($request);
+    private function _saveFile($request, $content)
+    {
+        $file = $this->_getFileFromReqeust($request);
         if ($file === false) return $this->_generateErrorPage('Page Not Found',
             'The Page you requested is yet to be made. Try again later.', ErrorPage::MISSING_PAGE_ERROR_TYPE);
         if ($file->write($content)) return new SimplePage('Success', 'Successfully Edited');
@@ -192,23 +199,28 @@ class DocsTool
 
     private function _generateErrorPage($title, $content, $type)
     {
-        $this->errorPage = new ErrorPage($title, $content, $this->get_page_params($type));
+        $this->errorPage = new ErrorPage($title, $content, $this->_getPageParams($type));
         $this->error = true;
         return $this->errorPage;
     }
 
-    private function get_page($request) {
+    private function _getPage($request)
+    {
         $params = $this->params;
-        $file = $this->get_file_from_request($request);
-        if ($file === false) return $this->_generateErrorPage('Page Not Found',
-            'The Page you requested is yet to be made. Try again later.', ErrorPage::MISSING_PAGE_ERROR_TYPE);
+        $file = $this->_getFileFromReqeust($request);
+        if ($file === false) {
+            return $this->_generateErrorPage('Page Not Found',
+                'The Page you requested is yet to be made. Try again later.', ErrorPage::MISSING_PAGE_ERROR_TYPE);
+        }
         $params['request'] = $request;
         $params['file_uri'] = $file->value;
-        if ($request !== 'index') $params['entry_page'] = $file->firstPage;
+        if ($request !== 'index') {
+            $params['entry_page'] = $file->firstPage;
+        }
         return MarkdownPage::fromFile($file, $params);
     }
 
-    private function get_page_params($mode = '') {
+    private function _getPageParams($mode = '') {
         $params = array();
         $params['local_base'] = $this->localBase;
 
@@ -345,9 +357,9 @@ class DocsTool
         return $params;
     }
 
-    private function get_file_from_request($request) {
-        $file = $this->tree->retrieve_file($request);
+    private function _getFileFromReqeust($request)
+    {
+        $file = $this->tree->retrieveFile($request);
         return $file;
     }
-
 }
