@@ -18,7 +18,8 @@ class DemoController extends ControllerAbstract
         $docsTool = new DocsTool($this->docsPath);
         $docsTool->initialize();
         $page = $docsTool->handleRequest($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], $_REQUEST);
-        $page->display();
 
+        $this->application->render('document', array('page' => $page));
+        //$page->display();
     }
   }

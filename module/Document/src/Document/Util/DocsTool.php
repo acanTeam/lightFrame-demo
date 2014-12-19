@@ -94,7 +94,7 @@ class DocsTool
         }
         $this->mode = self::LIVE_MODE;
         $this->host = $_SERVER['HTTP_HOST'];
-        $this->baseUrl = $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
+        $this->baseUrl = $_SERVER['HTTP_HOST'] . str_replace('\\', '/', dirname($_SERVER['PHP_SELF']));
         $t = strrpos($this->baseUrl, '/index.php');
         if ($t != FALSE) {
             $this->baseUrl = substr($this->baseUrl, 0, $t);
@@ -220,140 +220,33 @@ class DocsTool
         return MarkdownPage::fromFile($file, $params);
     }
 
-    private function _getPageParams($mode = '') {
-        $params = array();
-        $params['local_base'] = $this->localBase;
+    private function _getPageParams($mode = '')
+    {
+        $params = $this->options;
+        $params['localBase'] = $this->localBase;
+        $mode = $mode === '' ? $this->mode : $mode;
+        $params['mode'] = $params['errorType'] = $mode;
 
-        if ($mode === '') $mode = $this->mode;
-        $params['mode'] = $mode;
-        switch ($mode) {
-            case ErrorPage::FATAL_ERROR_TYPE:
-                $params['error_type'] = ErrorPage::FATAL_ERROR_TYPE;
-                break;
-
-            case ErrorPage::NORMAL_ERROR_TYPE:
-            case ErrorPage::MISSING_PAGE_ERROR_TYPE:
-                $params['error_type'] = $mode;
-                $params['index_key'] = 'index';
-                $params['docs_path'] = $this->docsPath;
-                $protocol = '//';
-                $params['base_url'] = $protocol . $this->baseUrl;
-                $params['base_page'] = $params['base_url'];
-                $params['host'] = $this->host;
-                $params['tree'] = $this->tree;
-                $params['index'] = ($this->tree->index_page !== false) ? $this->tree->index_page : $this->tree->firstPage;
-                $params['clean_urls'] = $this->options['clean_urls'];
-
-                $params['tagline'] = $this->options['tagline'];
-                $params['title'] = $this->options['title'];
-                $params['author'] = $this->options['author'];
-                $params['image'] = $this->options['image'];
-                if ($params['image'] !== '') $params['image'] = str_replace('<base_url>', $params['base_url'], $params['image']);
-                $params['repo'] = $this->options['repo'];
-                $params['links'] = $this->options['links'];
-                $params['twitter'] = $this->options['twitter'];
-                $params['google_analytics'] = ($g = $this->options['google_analytics']) ?
-                    DocsHelper::google_analytics($g, $this->host) : '';
-                $params['piwik_analytics'] = ($p = $this->options['piwik_analytics']) ?
-                    DocsHelper::piwik_analytics($p, $this->options['piwik_analytics_id']) : '';
-
-                $params['template'] = $this->options['template'];
-                $params['theme'] = DocsHelper::configure_theme($this->localBase . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR .
-                    $this->options['template'] . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . $this->options['theme'] . '.thm', $params['base_url'],
-                    $this->localBase, $params['base_url'] . "templates/" . $params['template'] . "/themes/" . $this->options['theme'] . '/');
-                break;
-
-            case DocsTool::LIVE_MODE:
-                $params['docs_path'] = $this->docsPath;
-                $params['index_key'] = 'index';
-                $protocol = '//';
-                $params['base_url'] = $protocol . $this->baseUrl;
-                $params['base_page'] = $params['base_url'];
-                $params['host'] = $this->host;
-                $params['tree'] = $this->tree;
-                $params['index'] = ($this->tree->index_page !== false) ? $this->tree->index_page : $this->tree->firstPage;
-                $params['clean_urls'] = $this->options['clean_urls'];
-
-                $params['tagline'] = $this->options['tagline'];
-                $params['title'] = $this->options['title'];
-                $params['author'] = $this->options['author'];
-                $params['image'] = $this->options['image'];
-                if ($params['image'] !== '') $params['image'] = str_replace('<base_url>', $params['base_url'], $params['image']);
-                $params['repo'] = $this->options['repo'];
-                $params['links'] = $this->options['links'];
-                $params['twitter'] = $this->options['twitter'];
-                $params['google_analytics'] = ($g = $this->options['google_analytics']) ?
-                    DocsHelper::google_analytics($g, $this->host) : '';
-                $params['piwik_analytics'] = ($p = $this->options['piwik_analytics']) ?
-                    DocsHelper::piwik_analytics($p, $this->options['piwik_analytics_id']) : '';
-
-                $params['template'] = $this->options['template'];
-                $params['theme'] = DocsHelper::configure_theme($this->localBase . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR .
-                    $this->options['template'] . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . $this->options['theme'] . '.thm', $params['base_url'],
-                    $this->localBase, $params['base_url'] . "templates/" . $params['template'] . "/themes/" . $this->options['theme'] . '/', $mode);
-
-
-                if ($params['breadcrumbs'] = $this->options['breadcrumbs'])
-                    $params['breadcrumb_separator'] = $this->options['breadcrumb_separator'];
-                $params['multilanguage'] = !empty($this->options['languages']);
-                $params['languages'] = $this->options['languages'];
-                if (empty($this->options['languages'])) {
-                    $params['entry_page'] = $this->tree->firstPage;
-                } else {
-                    foreach ($this->options['languages'] as $key => $name) {
-                        $params['entry_page'][$key] = $this->tree->value[$key]->firstPage;
-                    }
-                }
-
-                $params['toggle_code'] = $this->options['toggle_code'];
-                $params['float'] = $this->options['float'];
-                $params['date_modified'] = $this->options['date_modified'];
-                $params['file_editor'] = $this->options['file_editor'];
-                break;
-
-            case DocsTool::STATIC_MODE:
-                $params['docs_path'] = $this->docsPath;
-                $params['index_key'] = 'index.html';
-                $params['base_url'] = '';
-                $params['base_page'] = $params['base_url'];
-                $params['tree'] = $this->tree;
-                $params['index'] = ($this->tree->index_page !== false) ? $this->tree->index_page : $this->tree->firstPage;
-
-                $params['tagline'] = $this->options['tagline'];
-                $params['title'] = $this->options['title'];
-                $params['author'] = $this->options['author'];
-                $params['image'] = $this->options['image'];
-                $params['repo'] = $this->options['repo'];
-                $params['links'] = $this->options['links'];
-                $params['twitter'] = $this->options['twitter'];
-                $params['google_analytics'] = ($g = $this->options['google_analytics']) ?
-                    DocsHelper::google_analytics($g, $this->host) : '';
-                $params['piwik_analytics'] = ($p = $this->options['piwik_analytics']) ?
-                    DocsHelper::piwik_analytics($p, $this->options['piwik_analytics_id']) : '';
-
-                $params['template'] = $this->options['template'];
-                $params['theme'] = DocsHelper::configure_theme($this->localBase . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR .
-                    $this->options['template'] . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . $this->options['theme'] . '.thm', $params['base_url'],
-                    $this->localBase, $params['base_url'] . "templates/" . $params['template'] . "/themes/" . $this->options['theme'] . '/', $mode);
-
-                if ($params['breadcrumbs'] = $this->options['breadcrumbs'])
-                    $params['breadcrumb_separator'] = $this->options['breadcrumb_separator'];
-                $params['multilanguage'] = !empty($this->options['languages']);
-                $params['languages'] = $this->options['languages'];
-                if (empty($this->options['languages'])) {
-                    $params['entry_page'] = $this->tree->firstPage;
-                } else {
-                    foreach ($this->options['languages'] as $key => $name) {
-                        $params['entry_page'][$key] = $this->tree->value[$key]->firstPage;
-                    }
-                }
-
-                $params['toggle_code'] = $this->options['toggle_code'];
-                $params['float'] = $this->options['float'];
-                $params['date_modified'] = $this->options['date_modified'];
-                $params['file_editor'] = false;
-                break;
+        if ($mode == ErrorPage::FATAL_ERROR_TYPE) {
+            return $params;
         }
+
+        $baseParams = array(
+            'error_type' => $mode,
+            'index_key' => 'index',
+            'docs_path' => $this->docsPath,
+            'base_url' => 'http://' . $this->baseUrl,
+            'base_page' => 'http://' . $this->baseUrl,
+            'host' => $this->host,
+            'tree' => $this->tree,
+            'index' => $this->tree->indexPage !== false ? $this->tree->indexPage : $this->tree->firstPage,
+        );
+        if ($mode == self::STATIC_MODE) {
+            $baseParams['index'] = 'index.html';
+            $baseParams['file_editor'] = false;
+        }
+        $params = array_merge($params, $baseParams);
+
         return $params;
     }
 

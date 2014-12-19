@@ -42,14 +42,14 @@ class Markdown extends Simple
         if ($params['breadcrumbs'])
             $this->breadcrumbTrail = $this->_buildBreadcrumbTrail($file->parents, $params['multilanguage']);
         $this->language = '';
-        if ($params['multilanguage'] && !empty($file->parents)) {
+        if (isset($params['multilanguage']) && $params['multilanguage'] && !empty($file->parents)) {
             reset($file->parents);
             $language_dir = current($file->parents);
             $this->language = $language_dir->name;
         }
         if (is_null(static::$template)) {
-            include_once($params['theme']['template']);
-            static::$template = new \Template();
+            //include_once($params['theme']['template']);
+            static::$template = '';//new \Template();
         }
     }
 
