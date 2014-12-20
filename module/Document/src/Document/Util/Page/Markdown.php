@@ -53,8 +53,12 @@ class Markdown extends Simple
         }
     }
 
-    private function _buildBreadcrumbTrail($parents, $multilanguage) {
-        if ($multilanguage && !empty($parents)) $parents = array_splice($parents, 1);
+    private function _buildBreadcrumbTrail($parents, $multilanguage)
+    {
+        if ($multilanguage && !empty($parents)) {
+            $parents = array_splice($parents, 1);
+        }
+
         $breadcrumbTrail = array();
         if (!empty($parents)) {
             foreach ($parents as $node) {

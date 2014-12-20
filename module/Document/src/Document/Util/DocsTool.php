@@ -38,7 +38,7 @@ class DocsTool
         $this->_loadDocsConfig($configFile);
         $this->_generateDirectoryTree();
         if (!$this->error) {
-            $this->params = $this->_getPageParams();
+            $this->params = $this->_getParams();
         }
     }
 
@@ -199,7 +199,7 @@ class DocsTool
 
     private function _generateErrorPage($title, $content, $type)
     {
-        $this->errorPage = new ErrorPage($title, $content, $this->_getPageParams($type));
+        $this->errorPage = new ErrorPage($title, $content, $this->_getParams($type));
         $this->error = true;
         return $this->errorPage;
     }
@@ -217,15 +217,17 @@ class DocsTool
         if ($request !== 'index') {
             $params['entry_page'] = $file->firstPage;
         }
-        return MarkdownPage::fromFile($file, $params);
+
+        return array('file' => $file, 'params' => $params);
+        //return MarkdownPage::fromFile($file, $params);
     }
 
-    private function _getPageParams($mode = '')
+    private function _getParams($mode = '')
     {
         $params = $this->options;
         $params['localBase'] = $this->localBase;
         $mode = $mode === '' ? $this->mode : $mode;
-        $params['mode'] = $params['errorType'] = $mode;
+        $params['mode'] = $params['error_type'] = $mode;
 
         if ($mode == ErrorPage::FATAL_ERROR_TYPE) {
             return $params;

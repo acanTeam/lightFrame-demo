@@ -74,12 +74,14 @@ class DirectoryEntry
         return $return;
     }
 
-    public function get_url() {
+    public function getUrl()
+    {
         $url = '';
         foreach ($this->parents as $node) {
             $url .= $node->uri . '/';
         }
         $url .=  $this->uri;
+
         return $url;
     }
 
