@@ -126,7 +126,11 @@ class DocsHelper
         $mode = $mode === null ? DocsTool::LIVE_MODE : $mode;
         $directoryEntry = new DirectoryEntry($dir, $parents);
         $newParents = $parents;
-        $newParents = is_null($newParents) ? array() : $directoryEntry;
+        if (is_null($newParents)) {
+            $newParents = array();
+        } else {
+            $newParents[] = $directoryEntry;
+        }
 
         while (($entry = readdir($dirHandler)) !== false) {
             if ($entry == '.' || $entry == '..') {
@@ -144,7 +148,7 @@ class DocsHelper
             $fileDetails = static::pathinfo($path);
             if (is_dir($path)) {
                 $entry = static::_directoryTreeBuilder($path, $ignore, $mode, $newParents);
-            } else if (isset($fileDetails['extension']) && in_array($fileDetails['extension'], DocsTool::$VALID_MARKDOWN_EXTENSIONS)) {
+            } else if (isset($fileDetails['extension']) && in_array($fileDetails['extension'], DocsTool::$validExtensions)) {
                 $entry = new DirectoryEntry($path, $newParents);
                 if ($mode === DocsTool::STATIC_MODE) {
                     $entry->uri .= '.html';
@@ -160,8 +164,8 @@ class DocsHelper
         $index_key = ($mode === DocsTool::LIVE_MODE) ? 'index' : 'index.html';
         if (isset($directoryEntry->value[$index_key])) {
             $directoryEntry->value[$index_key]->firstPage = $directoryEntry->firstPage;
-            $directoryEntry->index_page =  $directoryEntry->value[$index_key];
-        } else $directoryEntry->index_page = false;
+            $directoryEntry->indexPage =  $directoryEntry->value[$index_key];
+        } else $directoryEntry->indexPage = false;
         return $directoryEntry;
     }
 

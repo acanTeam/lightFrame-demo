@@ -9,7 +9,9 @@ class DocsTool
     const STATIC_MODE = 'DOCS_STATIC';
     const LIVE_MODE = 'DOCS_LIVE';
 
-    public static $VALID_MARKDOWN_EXTENSIONS;
+    public static $validExtensions;
+
+    private $mode;
     private $localBase;
     private $baseUrl;
     private $host;
@@ -17,45 +19,78 @@ class DocsTool
     private $docsPath;
     private $tree;
     private $options;
-    private $errorPage;
-    private $error = false;
-    private $params;
-    private $mode;
 
-    public function __construct($basePath, $currentDocs = 'docs')
+    public function __construct($basePath)
     {
-        $this->localBase = $basePath;
-        $this->currentDocs = $currentDocs;
-        $this->_initialSetup();
-    }
-
-    public function initialize($configFile = 'config.json')
-    {
-        if ($this->error) {
+        global $argc;
+        if (isset($argc)) {
+            $this->mode = self::STATIC_MODE;
             return;
         }
 
-        $this->_loadDocsConfig($configFile);
-        $this->_generateDirectoryTree();
-        if (!$this->error) {
-            $this->params = $this->_getParams();
+        $this->mode = self::LIVE_MODE;
+        $this->host = $_SERVER['HTTP_HOST'];
+        
+        $baseUrl = '';
+        $baseUrl = $_SERVER['HTTP_HOST'] . str_replace('\\', '/', dirname($_SERVER['PHP_SELF']));
+        $t = strrpos($baseUrl, '/index.php');
+        if ($t != FALSE) {
+            $baseUrl = substr($baseUrl, 0, $t);
         }
+        $baseUrl .= substr($baseUrl, -1) !== '/' ? '/' : '';
+        $this->baseUrl = $baseUrl;
+        
+        $this->localBase = $basePath;
+    }
+
+    public function initialize($currentDocs)
+    {
+        $this->currentDocs = $currentDocs;
+
+        $globalConfigFile = $this->localBase . DIRECTORY_SEPARATOR . 'global.json';
+        if (!file_exists($globalConfigFile)) {
+            return $this->_getMessage('GLOBAL_CONFIG_MISSING', $globalConfigFile);
+        }
+        $globalConfigs = json_decode(file_get_contents($globalConfigFile), true);
+
+        $defaultConfigFile = $this->localBase . DIRECTORY_SEPARATOR . 'default.json';
+        if (!file_exists($defaultConfigFile)) {
+            return $this->_getMessage('DEFAULT_CONFIG_MISSING', $globalConfigFile);
+        }
+        $defaultConfigs = json_decode(file_get_contents($defaultConfigFile), true);
+
+        $this->docsPath = $this->localBase . DIRECTORY_SEPARATOR . $this->currentDocs;
+        if (!is_dir($this->docsPath)) {
+            return $this->_getMessage('DOCS_PATH_MISSING', $this->docsPath);
+        }
+
+        $configFile = $this->docsPath . DIRECTORY_SEPARATOR . 'config.json';
+        if (!file_exists($configFile)) {
+            return $this->_getMessage('CONFIG_FILE_MISSING', $configFile);
+        }
+        $configs = json_decode(file_get_contents($configFile), true);
+        $options = array_merge($globalConfigs, $defaultConfigs, $configs);
+
+        static::$validExtensions = isset($options['valid_markdown_extensions']) ? $options['valid_markdown_extensions'] : array('md', 'markdown');
+        $timezone = isset($options['timezone']) ? $options['timezone'] : 'GMT';
+        date_default_timezone_set($timezone);
+
+        $this->options = $options;
+
+        $this->tree = $this->_generateDirectoryTree();
     }
 
     public function generate_static($output_dir = NULL) {
         if (is_null($output_dir)) $output_dir = $this->localBase . DIRECTORY_SEPARATOR . 'static';
         DocsHelper::clean_copy_assets($output_dir, $this->localBase);
-        $this->recursive_generate_static($this->tree, $output_dir, $this->params);
+        $this->recursive_generate_static($this->tree, $output_dir, $this->options);
     }
 
     public function handleRequest($url, $query = array())
     {
-        if ($this->error) {
-            return $this->errorPage;
-        }
-
-        if (!$this->params['clean_urls']) {
-            $this->params['base_page'] .= 'index.php/';
+        $this->_addOptions();
+        if (!$this->options['clean_urls']) {
+            $this->options['base_page'] .= 'index.php/';
         }
 
         $request = DocsHelper::getRequest();
@@ -70,118 +105,47 @@ class DocsTool
                 $content = isset($query['markdown']) ? $query['markdown'] : '';
                 return $this->_saveFile($request, $content);
             }
-            return $this->_generateErrorPage('Editing Disabled', 'Editing is currently disabled in config',
+            return $this->_getMessage('Editing Disabled', 'Editing is currently disabled in config',
                 ErrorPage::FATAL_ERROR_TYPE);
         }
 
         return $this->_getPage($request);
     }
 
-    private function _initialSetup()
-    {
-        $this->_setupEnvironmentVariables();
-        $this->_loadGlobalConfig();
-    }
-
-    private function _setupEnvironmentVariables()
-    {
-        global $argc;
-        //$this->localBase = dirname(dirname(__FILE__));
-        $this->baseUrl = '';
-        if (isset($argc)) {
-            $this->mode = self::STATIC_MODE;
-            return;
-        }
-        $this->mode = self::LIVE_MODE;
-        $this->host = $_SERVER['HTTP_HOST'];
-        $this->baseUrl = $_SERVER['HTTP_HOST'] . str_replace('\\', '/', dirname($_SERVER['PHP_SELF']));
-        $t = strrpos($this->baseUrl, '/index.php');
-        if ($t != FALSE) {
-            $this->baseUrl = substr($this->baseUrl, 0, $t);
-        }
-        $this->baseUrl .= substr($this->baseUrl, -1) !== '/' ? '/' : '';
-    }
-
-    private function _loadGlobalConfig()
-    {
-        $globalConfigFile = $this->localBase . DIRECTORY_SEPARATOR . 'global.json';
-        if (!file_exists($globalConfigFile)) {
-            $this->_generateErrorPage('Global Config File Missing',
-            'The Global Config file is missing. Requested File : ' . $globalConfigFile, ErrorPage::FATAL_ERROR_TYPE);
-            return;
-        }
-
-        $globalConfig = json_decode(file_get_contents($globalConfigFile), true);
-        if (!isset($globalConfig)) {
-            $this->_generateErrorPage('Corrupt Global Config File',
-                'The Global Config file is corrupt. Check that the JSON encoding is correct', ErrorPage::FATAL_ERROR_TYPE);
-            return;
-        }
-
-        $this->docsPath = $this->localBase . DIRECTORY_SEPARATOR . $this->currentDocs;
-        if (!is_dir($this->docsPath)) {
-            $this->_generateErrorPage('Docs Directory not found',
-                'The Docs directory does not exist. Check the path again : ' . $this->docsPath, ErrorPage::FATAL_ERROR_TYPE);
-            return;
-        }
-
-        static::$VALID_MARKDOWN_EXTENSIONS = isset($globalConfig['valid_markdown_extensions']) ? $globalConfig['valid_markdown_extensions'] : array('md', 'markdown');
-    }
-
-    private function _loadDocsConfig($configFile)
-    {
-        $configFile = $this->docsPath . DIRECTORY_SEPARATOR . $configFile;
-        if (!file_exists($configFile)) {
-            $this->_generateErrorPage('Config File Missing',
-                'The local config file is missing. Check path : ' . $configFile, ErrorPage::FATAL_ERROR_TYPE);
-            return;
-        }
-        $this->options = json_decode(file_get_contents($this->localBase . DIRECTORY_SEPARATOR . 'default.json'), true);
-        if (is_file($configFile)) {
-            $config = json_decode(file_get_contents($configFile), true);
-            if (!isset($config)) {
-                $this->_generateErrorPage('Invalid Config File',
-                    'There was an error parsing the Config file. Please review', ErrorPage::FATAL_ERROR_TYPE);
-                return;
-            }
-            $this->options = array_merge($this->options, $config);
-        }
-
-        if (isset($this->options['timezone'])) {
-            date_default_timezone_set($this->options['timezone']);
-        } elseif (!ini_get('date.timezone')) {
-            date_default_timezone_set('GMT');
-        }
-    }
-
     private function _generateDirectoryTree()
     {
-        $this->tree = DocsHelper::buildDirectoryTree($this->docsPath, $this->options['ignore'], $this->mode);
-        if (!empty($this->options['languages'])) {
+        $docsPath = $this->docsPath;
+        $ignore = isset($this->options['ignore']) ? $this->options['ignore'] : array();
+        $mode = $this->mode;
+        $tree = DocsHelper::buildDirectoryTree($docsPath, $ignore, $mode);
+
+        $languages = isset($this->options['languages']) ? $this->options['languages'] : false;
+        if (!empty($languages)) {
             foreach ($this->options['languages'] as $key => $node) {
-                $this->tree->value[$key]->title = $node;
+                $tree->value[$key]->title = $node;
             }
         }
+        return $tree;
     }
 
-    private function recursive_generate_static($tree, $output_dir, $params, $baseUrl = '') {
-        $params['baseUrl'] = $params['base_page'] = $baseUrl;
-        $new_params = $params;
+    private function recursive_generate_static($tree, $output_dir, $options, $baseUrl = '') {
+        $options['baseUrl'] = $options['base_page'] = $baseUrl;
+        $new_options = $options;
         //changed this as well in order for the templates to be put in the right place
-        $params['theme'] = DocsHelper::rebase_theme($params['theme'], $baseUrl, $params['baseUrl'] . "templates/default/themes/" . $params['theme']['name'] . '/');
+        $options['theme'] = DocsHelper::rebase_theme($options['theme'], $baseUrl, $options['baseUrl'] . "templates/default/themes/" . $options['theme']['name'] . '/');
         //
-        $params['image'] = str_replace('<base_url>', $baseUrl, $params['image']);
-        if ($baseUrl !== '') $params['entry_page'] = $tree->firstPage;
+        $options['image'] = str_replace('<base_url>', $baseUrl, $options['image']);
+        if ($baseUrl !== '') $options['entry_page'] = $tree->firstPage;
         foreach ($tree->value as $key => $node) {
             if ($node->type === Directory_Entry::DIRECTORY_TYPE) {
                 $new_output_dir = $output_dir . DIRECTORY_SEPARATOR . $key;
                 @mkdir($new_output_dir);
-                $this->recursive_generate_static($node, $new_output_dir, $new_params, '../' . $baseUrl);
+                $this->recursive_generate_static($node, $new_output_dir, $new_options, '../' . $baseUrl);
             } else {
-                $params['request'] = $node->get_url();
-                $params['file_uri'] = $node->name;
+                $options['request'] = $node->get_url();
+                $options['file_uri'] = $node->name;
 
-                $page = MarkdownPage::fromFile($node, $params);
+                $page = MarkdownPage::fromFile($node, $options);
                 file_put_contents($output_dir . DIRECTORY_SEPARATOR . $key, $page->_getPage_content());
             }
         }
@@ -190,71 +154,77 @@ class DocsTool
     private function _saveFile($request, $content)
     {
         $file = $this->_getFileFromReqeust($request);
-        if ($file === false) return $this->_generateErrorPage('Page Not Found',
+        if ($file === false) return $this->_getMessage('Page Not Found',
             'The Page you requested is yet to be made. Try again later.', ErrorPage::MISSING_PAGE_ERROR_TYPE);
         if ($file->write($content)) return new SimplePage('Success', 'Successfully Edited');
-        else return $this->_generateErrorPage('File Not Writable', 'The file you wish to write to is not writable.',
+        else return $this->_getMessage('File Not Writable', 'The file you wish to write to is not writable.',
             ErrorPage::FATAL_ERROR_TYPE);
-    }
-
-    private function _generateErrorPage($title, $content, $type)
-    {
-        $this->errorPage = new ErrorPage($title, $content, $this->_getParams($type));
-        $this->error = true;
-        return $this->errorPage;
     }
 
     private function _getPage($request)
     {
-        $params = $this->params;
+        $options = $this->options;
         $file = $this->_getFileFromReqeust($request);
         if ($file === false) {
-            return $this->_generateErrorPage('Page Not Found',
+            return $this->_getMessage('Page Not Found',
                 'The Page you requested is yet to be made. Try again later.', ErrorPage::MISSING_PAGE_ERROR_TYPE);
         }
-        $params['request'] = $request;
-        $params['file_uri'] = $file->value;
+        $options['request'] = $request;
+        $options['file_uri'] = $file->value;
         if ($request !== 'index') {
-            $params['entry_page'] = $file->firstPage;
+            $options['entry_page'] = $file->firstPage;
         }
 
-        return array('file' => $file, 'params' => $params);
-        //return MarkdownPage::fromFile($file, $params);
+        return array('file' => $file, 'options' => $options, 'tree' => $this->tree);
+        //return MarkdownPage::fromFile($file, $options);
     }
 
-    private function _getParams($mode = '')
+    private function _addOptions($mode = '')
     {
-        $params = $this->options;
-        $params['localBase'] = $this->localBase;
+        $options['localBase'] = $this->localBase;
         $mode = $mode === '' ? $this->mode : $mode;
-        $params['mode'] = $params['error_type'] = $mode;
+        $options['mode'] = $options['error_type'] = $mode;
 
         if ($mode == ErrorPage::FATAL_ERROR_TYPE) {
-            return $params;
+            $this->options = array_merge($this->options, $options);
+            return ;
         }
 
-        $baseParams = array(
+        $baseOptions = array(
             'error_type' => $mode,
             'index_key' => 'index',
             'docs_path' => $this->docsPath,
             'base_url' => 'http://' . $this->baseUrl,
             'base_page' => 'http://' . $this->baseUrl,
             'host' => $this->host,
-            'tree' => $this->tree,
             'index' => $this->tree->indexPage !== false ? $this->tree->indexPage : $this->tree->firstPage,
         );
         if ($mode == self::STATIC_MODE) {
-            $baseParams['index'] = 'index.html';
-            $baseParams['file_editor'] = false;
+            $baseOptions['index'] = 'index.html';
+            $baseOptions['file_editor'] = false;
         }
-        $params = array_merge($params, $baseParams);
+        $options = array_merge($this->options, $options, $baseOptions);
 
-        return $params;
+        $this->options = $options;
     }
 
     private function _getFileFromReqeust($request)
     {
         $file = $this->tree->retrieveFile($request);
         return $file;
+    }
+
+    private function _getMessage($code, $data)//$title, $content, $type)
+    {
+        $messages = array(
+            'GLOBAL_CONFIG_MISSING' => 'The Global Config file is missing. Requested File : ' . $data,
+            'DOCS_PATH_MISSING' => 'The Docs directory does not exist. Check the path again : ' . $data,
+            'CONFIG_FILE_MISSING' => 'The local config file is missing. Check path : ' . $data,
+        );
+
+        return $messages[$code];
+        //$this->errorPage = new ErrorPage($title, $content, $this->_getoptions($type));
+        //$this->error = true;
+        //return $this->errorPage;
     }
 }

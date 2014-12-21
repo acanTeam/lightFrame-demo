@@ -11,77 +11,130 @@ class DemoController extends ControllerAbstract
         parent::__construct();
 
         $this->docsPath = 'E:\tmp\docs';
+        $this->docsTool = new DocsTool($this->docsPath);
     }
 
     public function index()
     {
-        $docsTool = new DocsTool($this->docsPath);
-        $docsTool->initialize();
-        $data = $docsTool->handleRequest($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], $_REQUEST);
+        $currentDocs = 'demo';
+        $statusInfo = $this->docsTool->initialize($currentDocs);
 
+        $this->docsTool->initialize($currentDocs);
+        $info = $this->docsTool->handleRequest($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], $_REQUEST);
+        $file = $info['file'];
+        $options = $info['options'];
+        $tree = $info['tree'];
 
-        $this->application->layout('document', 'docs_layout', array('page' => $page, 'application' => $this->application));
+        $this->_getBaseInfo($file, $options);
+        $data['breadcrumb'] = $this->_getBreadcrumb($file, $options);
+        $data['navigation'] = $this->_getNavigation($options, $tree);
+        $data['content'] = $this->_getContent($file, $options);
+
+//print_r($this->docsTool);
+        $this->application->layout('document', 'docs_layout', array('data' => $data, 'application' => $this->application));
         //$page->display();
     }
 
-    private function _getNavigation($tree, $path, $current_url, $base_page, $mode)
+    private function _getBaseInfo(& $file, & $options)
     {
-        $nav = '<ul class="nav nav-list">';
-        $nav .= $this->_buildNavigation($tree, $path, $current_url, $base_page, $mode);
-        $nav .= '</ul>';
-        return $nav;
+        $options['homePage'] = $file->title === 'index' ? $file->filename === '_index' : false;
+
+        $isMulLanguage = isset($options['languages']) && !empty($options['languages']);
+        if ($isMulLanguage && !empty($file->parents)) {
+            reset($file->parents);
+            $options['currentLanguage'] = current($file->parents);
+        }
+
+        if ($file->title === 'index') {
+            $parentDirSize = $isMulLanguage ? 2 : 1;
+            if (count($file->parents) >= $parentDirSize) {
+                $parent = end($file->parents);
+                $file->title = $parent->title;
+            } else {
+                $file->title = $options['title'];
+            }
+        }
+        $options['isMulLanguage'] = $isMulLanguage;
     }
 
-    private function _buildNavigation($tree, $path, $current_url, $base_page, $mode) {
-        $nav = '';
+    private function _getBreadcrumb($file, $options)
+    {
+        $parents = $options['isMulLanguage'] && !empty($file->parents) ? array_splice($file->parents, 1) : $file->parents; 
+        if (empty($parents)) {
+            return $file->title;
+        }
+
+        $title = '';
+        $separator = ' <i class="glyphicon glyphicon-chevron-right"></i> ';
+        foreach ($parents as $node) {
+            $url = $options['base_page'] . $node->getUrl();
+            $title .= "<a href='{$url}'>{$node->title}</a>{$separator}";
+        }
+        $title .= $file->title;
+
+        return $title;
+    }
+
+    private function _getContent($file, $options)
+    {
+        $contentSource = file_get_contents($file->localPath);
+        $parsedown = new \Document\Util\Parsedown();
+        $content = $parsedown->text($contentSource);
+
+        return array('contentSource' => $contentSource, 'content' => $content);
+        
+        $options = $this->options;
+        if ($options['request'] === $options['index_key']) {
+            if ($options['multilanguage']) {
+                foreach ($options['languages'] as $key => $name) {
+                    $entry_page[utf8_encode($name)] = utf8_encode($options['base_page'] . $options['entry_page'][$key]->get_url());
+                }
+            } else $entry_page['View Documentation'] = utf8_encode($options['base_page'] . $options['entry_page']->uri);
+        } else if ($options['file_uri'] === 'index')
+            $entry_page[utf8_encode($options['entry_page']->title)] = utf8_encode($options['base_page'].
+                $options['entry_page']->get_url());
+        $page['entry_page'] = (isset($entry_page)) ? $entry_page : null;
+
+        $page['filename'] = $this->filename;
+        $page['path'] = $this->path;
+        $page['request'] = utf8_encode($options['request']);
+        $page['modified_time'] = filemtime($this->path);
+        $page['markdown'] = $this->content;
+        $page['content'] = $Parsedown->text($this->content);
+        $page['file_editor'] = $options['file_editor'];
+
+        return static::$template->get_content($page, $options);
+    }
+
+    private function _getNavigation($options, $tree)//$tree, $path, $current_url, $base_page, $mode)
+    {
+        $navigation = '<ul class="nav nav-list">';
+        $languagePath = !empty($options['currentLanguage']) ? $options['currentLanguage'] . '/' : '';
+
         foreach ($tree->value as $node) {
-        	$url = $node->uri;
-            $link = ($path === '') ? $url : $path . '/' . $url;
+        	$path = $languagePath . $node->uri;
+            $link = $options['base_page'] . $path;
+            if ($options['mode'] === \Document\Util\DocsTool::STATIC_MODE) {
+                $link .= '/index.html';
+            }
 
             if ($node->type === \Document\Util\DirectoryEntry::FILE_TYPE) {
                 if ($node->value === 'index') {
                     continue;
                 }
 
-                $activeClass = $currentUrl == $link ? ' class="active"' : '';
-                $nav .= "<li {$activeClass}><a href='{$basePage}{$link}'>{$node->title}</a></li>";
+                $activeClass = $options['request'] == $path ? ' class="active"' : '';
+                $navigation .= "<li {$activeClass}><a href='{$link}'>{$node->title}</a></li>";
             } else {
-                $nav .= '<li';
-                $openClass = strpos($current_url, $link) === 0 ? ' class="open"' : '';
-                $nav .= ">";
-                if ($mode === \Document\Util\DocsTool::STATIC_MODE) {
-                    $link .= '/index.html';
-                }
-                if ($node->indexPage) {
-                    $nav .= '<a href="' . $base_page . $link . '" class="folder">' .
-                    $node->title . '</a>';
-                } else {
-                    $nav .= '<a href="#" class="aj-nav folder">' . $node->title . '</a>';
-                }
-                $nav .= '<ul class="nav nav-list">';
-                $new_path = ($path === '') ? $url : $path . '/' . $url;
-                $nav .= $this->_buildNavigation($node, $new_path, $current_url, $base_page, $mode);
-                $nav .= '</ul></li>';
+                $openClass = strpos($options['request'], $link) === 0 ? ' class="open"' : '';
+                $elem = $node->indexPage ? "<a href='{$link}' class='folder'>{$node->title}</a>" :
+                    "<a href='javascript:void(0);' class='aj-nav folder'>{$node->title}</a>";
+                $subNavigation = $this->_getNavigation($options, $node);
+
+                $navigation .= "<li {$openClass}>{$elem}{$subNavigation}</li>";
             }
         }
 
-        return $nav;
-    }
-    
-    private function get_breadcrumb_title($page, $basePage)
-    {
-        $title = '';
-        $breadcrumbTrail = $page['breadcrumb_trail'];
-        $separator = ' <i class="glyphicon glyphicon-chevron-right"></i> ';
-        foreach ($breadcrumbTrail as $key => $value) {
-            $title .= '<a href="' . $basePage . $value . '">' . $key . '</a>' . $separator;
-        }
-        if ($page['filename'] === 'index' || $page['filename'] === '_index') {
-            if ($page['title'] != '') $title = substr($title, 0, -1 * strlen($separator));
-        } else {
-            $title .= '<a href="' . $base_page . $page['request'] . '">' . $page['title'] . '</a>';
-        }
-
-        return $title;
+        return $navigation . '</ul>';
     }
 }
