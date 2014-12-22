@@ -7,8 +7,14 @@ class IndexController extends ControllerAbstract
 {
     public function __construct()
     {
+        $this->currentModule = 'Application';
         parent::__construct();
         //echo 'init index';
+    }
+
+    public function form()
+    {
+        $this->application->layout('form', 'common/layout', array('application' => $this->application));
     }
 
     public function map()

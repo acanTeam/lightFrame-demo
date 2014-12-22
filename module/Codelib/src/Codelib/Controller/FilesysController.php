@@ -2,6 +2,8 @@
 namespace Codelib\Controller;
 
 use \Light\Mvc\Controller\ControllerAbstract as ControllerAbstract;
+use \Light\Filesystem\Directory as Directory;
+use \Light\Filesystem\FileInfo as FileInfo;
 
 class FilesysController extends ControllerAbstract
 {
@@ -19,23 +21,26 @@ class FilesysController extends ControllerAbstract
         print_r($umlConfigs);
 
         $dirName = 'E:\www\github\zf2-source\library\Zend';
+        foreach ($umlConfigs['classPaths'] as $directory) {
+            $files = Directory::read($directory);
+            print_r($files);
         
-        $files = Dirs::read($dirName);
-        $shellContent = '';
-        $htmlContent = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><p>';
-        $i = 0;
-        foreach ($files as $fileName) {
-        	$suffixStr = ($i % 5) == 4 ? '</p><br />' : '-----';
-        	$fileBase = basename($fileName);
-        	$shellContent .= "/opt/soft/php/bin/php /var/htmlwww/phuml/src/app/phuml -r /var/htmlwww/zf2/library/Zend/{$fileBase} -graphviz -createAssociations false -Neato /var/htmlwww/phuml/html/{$fileBase}.png\n";
-        	$htmlContent .= "<a href='http://42.96.170.56/phuml/html/{$fileBase}.png' target='_blank'>{$fileBase}</a>{$suffixStr}";
-        	$i++;
+            $shellContent = '';
+            $htmlContent = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><p>';
+            $i = 0;
+            foreach ($files as $fileName) {
+            	$suffixStr = ($i % 5) == 4 ? '</p><br />' : '-----';
+            	$fileBase = basename($fileName);
+            	$shellContent .= "/opt/soft/php/bin/php /var/htmlwww/phuml/src/app/phuml -r /var/htmlwww/zf2/library/Zend/{$fileBase} -graphviz -createAssociations false -Neato /var/htmlwww/phuml/html/{$fileBase}.png\n";
+            	$htmlContent .= "<a href='http://42.96.170.56/phuml/html/{$fileBase}.png' target='_blank'>{$fileBase}</a>{$suffixStr}";
+            	$i++;
+            }
+            $htmlContent = rtrim($htmlContent, '-') . '</p>';
+            echo $shellContent;
+            echo $htmlContent;
+            file_put_contents('shell.txt', $shellContent);
+            file_put_contents('html.txt', $htmlContent);
         }
-        $htmlContent = rtrim($htmlContent, '-') . '</p>';
-        echo $shellContent;
-        echo $htmlContent;
-        file_put_contents('shell.txt', $shellContent);
-        file_put_contents('html.txt', $htmlContent);
     }
 
     public function removeBom()

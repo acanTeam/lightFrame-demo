@@ -7,6 +7,7 @@ class BootstrapController extends ControllerAbstract
 {
     public function __construct()
     {
+        $this->currentModule = 'Application';
         parent::__construct();
     }
 
