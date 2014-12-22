@@ -7,9 +7,9 @@ class CiautoController extends ControllerAbstract
 {
     public function __construct()
     {
+        $this->currentModule = 'Codelib';
         parent::__construct();
 
-        $this->modulePath = $this->application->container['configs']['modulePath']['Codelib'];
         $this->link = $this->_connectDb();
         //echo 'init ciauto';
     }

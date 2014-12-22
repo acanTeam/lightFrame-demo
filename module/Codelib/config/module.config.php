@@ -6,5 +6,7 @@ return array(
         'ciauto' => array('/codelib/ciauto', '\Codelib\Controller\CiautoController:index'),
         'domain' => array('/codelib/domain/:type', '\Codelib\Controller\DomainController:index'),
         'evil' => array('/codelib/evil', '\Codelib\Controller\EvilController:index'),
+        'phuml' => array('/codelib/phuml', '\Codelib\Controller\FilesysController:phuml'),
+        'movebom' => array('/codelib/movbom', '\Codelib\Controller\FilesysController:movebom'),
     ),
 );
