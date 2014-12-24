@@ -2,11 +2,13 @@
 namespace Codelib\Controller;
 
 use \Light\Mvc\Controller\ControllerAbstract as ControllerAbstract;
+use \Light\Filesystem\Directory as Directory;
 
 class DomainController extends ControllerAbstract
 {
     public function __construct()
     {
+        $this->currentModule = 'Codelib';
         parent::__construct();
 
         //http://frame.91zuiai.biz/codelib/domain/local
@@ -38,7 +40,8 @@ class DomainController extends ControllerAbstract
             'baseDomain' => array('iammumu', 'julymom'),
             'ip' => 'localhost',
             'wwwPath' => 'e:/www/',
-            'httpdPath' => 'e:/tmp/',//'e:/xampp/apache/',
+            'httpdPath' => 'e:/xampp/apache/',
+            'tmpPath' => 'e:/tmp/httpd/',
             'logPath' => 'e:/xampp/apache/logs/',
         );
         $textInfos = getTextInfos(true);
@@ -54,9 +57,10 @@ class DomainController extends ControllerAbstract
             'ip' => '42.96.170.56',
             'wwwPath' => '/var/htmlwww/',
             'httpdPath' => '/opt/soft/httpd/',
+            'tmpPath' => '/tmp/httpd/',
             'logPath' => '/var/slog/httpd/logs/',
         );
-        $textInfos = getTextInfos(true);
+        $textInfos = getTextInfos();
         
         $this->createDomain($baseInfo, $textInfos);
     }
@@ -100,15 +104,18 @@ class DomainController extends ControllerAbstract
             if ($isBase) {
                 $baseStr .= "\n" . $domainStr;
             } else {
-                $file = $baseInfo['httpdPath'] . 'conf/extra/httpd-vhosts-' . $domain . '.conf';
+                $file = $baseInfo['tmpPath'] . 'conf/extra/httpd-vhosts-' . $domain . '.conf';
+                Directory::mkdir(dirname($file));
                 file_put_contents($file, $domainStr);
             }
             $hosts .= "\n";
         } 
         
-        $baseFile = $baseInfo['httpdPath'] . 'conf/extra/httpd-vhosts.conf';
+        $baseFile = $baseInfo['tmpPath'] . 'conf/extra/httpd-vhosts.conf';
+        Directory::mkdir(dirname($baseFile));
         file_put_contents($baseFile, $baseStr);
-        $hostFile = $baseInfo['httpdPath'] . 'conf/hosts';
+        $hostFile = $baseInfo['tmpPath'] . 'conf/hosts';
+        Directory::mkdir(dirname($hostFile));
         file_put_contents($hostFile, $hosts);
     }
 

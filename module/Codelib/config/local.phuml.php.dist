@@ -1,6 +1,7 @@
 <?php
 return array(
     'phumlCommand' => '/opt/soft/php/bin/php /var/htmlwww/phuml/src/app/phuml',
+    'targetPath' => '/var/htmlwww/common/upload/phuml',
     'classPaths' => array(
         '/var/htmlwww/wangcan/lightFrame/library/',
         '/var/htmlwww/workstudio/zf2/library/',

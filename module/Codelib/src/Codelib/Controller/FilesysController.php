@@ -15,32 +15,72 @@ class FilesysController extends ControllerAbstract
         $this->configPath = $this->modulePath . '/config/';
     }
 
+    public function phumlshow()
+    {
+        $path = $this->application->configCommon['uploadPath'];
+        $pngPath = $path . 'phuml/';
+
+        $infos = Directory::getTree($pngPath);
+
+        $files = $this->getFiles($infos);
+
+        $this->application->layout('phuml', 'common/layout', array('infos' => $infos, 'files' => $files, 'currentPath' => '', 'application' => $this->application));
+    }
+
+    private function getFiles($infos, $parentCode = '')
+    {
+        static $files = array();
+        
+        foreach ($infos as $code => $info) {
+            if ($code == '_files') {
+                $files[$parentCode . '_' . $code] = $info;
+            } else {
+                $this->getFiles($info, $code);
+            }
+        }
+        return $files;
+    }
+
     public function phuml()
     {
         $umlConfigs = require $this->configPath . 'local.phuml.php';
-        print_r($umlConfigs);
 
-        $dirName = 'E:\www\github\zf2-source\library\Zend';
-        foreach ($umlConfigs['classPaths'] as $directory) {
-            $files = Directory::read($directory);
-            print_r($files);
-        
-            $shellContent = '';
-            $htmlContent = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><p>';
-            $i = 0;
-            foreach ($files as $fileName) {
-            	$suffixStr = ($i % 5) == 4 ? '</p><br />' : '-----';
-            	$fileBase = basename($fileName);
-            	$shellContent .= "/opt/soft/php/bin/php /var/htmlwww/phuml/src/app/phuml -r /var/htmlwww/zf2/library/Zend/{$fileBase} -graphviz -createAssociations false -Neato /var/htmlwww/phuml/html/{$fileBase}.png\n";
-            	$htmlContent .= "<a href='http://42.96.170.56/phuml/html/{$fileBase}.png' target='_blank'>{$fileBase}</a>{$suffixStr}";
-            	$i++;
-            }
-            $htmlContent = rtrim($htmlContent, '-') . '</p>';
-            echo $shellContent;
-            echo $htmlContent;
-            file_put_contents('shell.txt', $shellContent);
-            file_put_contents('html.txt', $htmlContent);
+        $shellContent = '';
+        foreach ($umlConfigs['paths'] as $code => $directory) {
+            $this->_createPng($code, $directory, $umlConfigs);
+
         }
+
+        foreach ($umlConfigs['subPaths'] as $code => $directory) {
+            if (!is_dir($directory)) {
+                echo $directory . '<br />';
+                continue;
+            }
+
+            $subDirectorys = Directory::read($directory);
+            foreach ($subDirectorys as $subDirectory) {
+                $basename = basename($subDirectory);
+                $this->_createPng($code . '_' . $basename, $subDirectory, $umlConfigs);
+            }
+        }
+    }
+
+    private function _createPng($code, $directory, $config)
+    {
+        if (!is_dir($directory)) {
+            echo $directory . '<br />';
+            return ;
+        }
+
+        $code = str_replace('_', '/', $code);
+        $targetFile = str_replace($directory, $config['targetPath'] . '/' . $code, $directory) . '.png';
+        if (file_exists($targetFile) && filesize($targetFile) > 0) {
+            return ;
+        }
+        Directory::mkdir(dirname($targetFile));
+        $command = "{$config['phumlCommand']} -r {$directory} -graphviz -createAssociations false -Neato {$targetFile}";
+        echo $command . '<br />';
+        //exec($command, $output);
     }
 
     public function removeBom()
