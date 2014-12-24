@@ -22,7 +22,11 @@ foreach ($configs['routeInfos'] as $module => $routes) {
     foreach ($routes as $name => $route) {
         $pattern = array_shift($route);
         $callable = array_pop($route);
-        $app->get($pattern, $callable);
+        if (in_array('post', $route)) {
+            $app->post($pattern, $callable);
+        } else {
+            $app->get($pattern, $callable);
+        }
     }
 }
 
