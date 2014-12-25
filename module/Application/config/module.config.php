@@ -13,6 +13,7 @@ return array(
         }),
         'form' => array('/bootstrap/form', '\Application\Controller\IndexController:form'),
         'listinfo' => array('/lbs/listinfo', '\Application\Controller\SurveyController:listinfo'),
+        'statistic' => array('/lbs/statistic', '\Application\Controller\SurveyController:statistic'),
         'show' => array('/lbs/show', '\Application\Controller\SurveyController:show'),
         'survey' => array('/lbs/survey', '\Application\Controller\SurveyController:index'),
         'answer' => array('/lbs/answer', 'post', '\Application\Controller\SurveyController:answer'),

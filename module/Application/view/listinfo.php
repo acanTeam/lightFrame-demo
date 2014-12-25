@@ -9,6 +9,7 @@
           <tr>
             <th>ID</th>
             <th>年龄</th>
+            <th>职业</th>
             <th>工作地址</th>
             <th>地图APP</th>
             <th>参与时间</th>
@@ -17,11 +18,12 @@
             <th>问卷详情</th>
           </tr>
         </thead>
-        <?php $i = 1; foreach ($infos as $info) { ?>
         <tbody>
+        <?php $i = 1; foreach ($infos as $info) { ?>
           <tr>
             <td><?php echo $info['id']; ?></td>
             <td><?php echo $info['age']; ?></td>
+            <td><?php echo $info['career']; ?></td>
             <td><?php echo $info['job_address']; ?></td>
             <td><?php echo $info['mapapp']; ?></td>
             <td><?php echo $info['create_time']; ?></td>
@@ -29,8 +31,8 @@
             <td><?php echo $info['user_agent']; ?></td>
             <td><?php echo "<a href='{$application->domain}lbs/show?id={$info['id']}' target='_blank'>详情</a>"; ?></td>
           </tr>
-        </tbody>
         <?php } ?>
+        </tbody>
       </table>
     </div>
   </div>

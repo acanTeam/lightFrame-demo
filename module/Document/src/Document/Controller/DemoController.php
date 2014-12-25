@@ -8,6 +8,7 @@ class DemoController extends ControllerAbstract
 {
     public function __construct()
     {
+        $this->currentModule = 'Document';
         parent::__construct();
 
         $this->docsPath = 'E:\tmp\docs';

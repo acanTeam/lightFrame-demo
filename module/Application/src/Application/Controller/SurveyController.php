@@ -15,8 +15,62 @@ class SurveyController extends ControllerAbstract
         session_start();
     }
 
+    public function statistic()
+    {
+        $valid = $this->_validRole();
+        if (empty($valid)) {
+            $this->_messageInfo('您没有浏览权限', $this->application->domain . 'lbs/survey');
+        }
+
+        $questions = $this->_getQuestions();
+
+        $getNum = mysql_query("SELECT COUNT(*) AS `nums` FROM `workstudio_test`.`wt_survey`");
+		$nums = mysql_fetch_row($getNum);
+        $nums = $nums[0];
+
+        $questionNums = array();
+        foreach ($questions['questions'] as $key => $info) {
+            foreach (array($key . '_have', $key . '_no') as $field) {
+                $sql = "SELECT `{$field}`, COUNT(*) AS `num` FROM  `workstudio_test`.`wt_survey` GROUP BY `{$field}`";
+                $query = mysql_query($sql);
+                $statisticInfo[$field] = array();
+                while ($row = mysql_fetch_assoc($query)) {
+                    $answer = $row[$field];
+                    $num = $row['num'];
+                    $statisticInfo[$field][$answer] = $num;
+                    $numField = str_replace($key . '_', '', $field);
+                    $info[$numField . '_' . $answer] = $num;
+                    $info[$numField . '_' . $answer . '_rate'] = (round($num / $nums, 3) * 100) . '%';
+                    $questionNums[$numField][$answer] = isset($questionNums[$numField][$answer]) ? $questionNums[$numField][$answer] + $num : $num;
+                }
+            }
+
+            for ($i = 1; $i <= 5; $i++) {
+                $info[$i] = isset($info['have_' . $i]) ? 'have:' . $info['have_' . $i] . ' ( ' . $info['have_' . $i . '_rate'] . ' ) ': 'have:0 ( 0 ) ';
+                $info[$i] .= isset($info['no_' . $i]) ? '<br />no:' . $info['no_' . $i] . ' ( ' . $info['no_' . $i . '_rate'] . ' ) ' : '<br />no: 0 ( 0 ) ';
+            }
+            $info['statistic'] = $statisticInfo;
+            $questions['questions'][$key] = $info;
+        }
+
+        $data = array(
+            'questionNums' => $questionNums,
+            'allNum' => $nums,
+            'application' => $this->application,
+            'questions' => $questions,
+        );
+
+        $this->application->layout('statistic', 'common/layout', $data);
+
+    }
+
     public function listinfo()
     {
+        $valid = $this->_validRole();
+        if (empty($valid)) {
+            $this->_messageInfo('您没有浏览权限', $this->application->domain . 'lbs/survey');
+        }
+
         $page = isset($_GET['page']) ? $_GEt['page'] : 1;
         $ip = isset($_GET['ip']) ? $_GET['ip'] : '';
         $userAgent = isset($_GET['user_agent']) ? $_GET['user_agent'] : '';
@@ -29,7 +83,7 @@ class SurveyController extends ControllerAbstract
         $nums = $nums[0];
 
         $start = ($page - 1) * 20;
-        $getInfos = mysql_query("SELECT `id`, `age`, `job_address`, `mapapp`, `create_time`, `ip`, `user_agent` FROM `workstudio_test`.`wt_survey` WHERE {$where} ORDER BY `create_time` DESC LIMIT {$start}, 20");
+        $getInfos = mysql_query("SELECT `id`, `age`, `career`, `job_address`, `mapapp`, `create_time`, `ip`, `user_agent` FROM `workstudio_test`.`wt_survey` WHERE {$where} ORDER BY `create_time` DESC LIMIT {$start}, 20");
         $infos = array();
         while ($row = mysql_fetch_assoc($getInfos)) {
             $row['create_time'] = date('Y-m-d H:i:s', $row['create_time']);
@@ -47,6 +101,10 @@ class SurveyController extends ControllerAbstract
 
     public function show()
     {
+        $valid = $this->_validRole(true);
+        if (empty($valid)) {
+            //$this->_messageInfo('您没有浏览权限', $this->domain . 'lbs/survey');
+        }
         $questions = $this->_getQuestions();
         $id = isset($_GET['id']) ? $_GET['id'] : false;
         if (empty($id)) {
@@ -86,7 +144,7 @@ class SurveyController extends ControllerAbstract
         unset($_SESSION['sign']);
         $sign = isset($infos['sign']) ? $infos['sign'] : '';
         if (empty($mySign) || empty($sign) || $mySign != $sign) {
-            exit('error');
+            $this->_messageInfo('请按正常流程参与问卷', $this->application->domain . 'lbs/survey', 5000);
         }
         $questions = $this->_getQuestions();
         $data = array_keys($questions['baseQuestions']);
@@ -99,7 +157,7 @@ class SurveyController extends ControllerAbstract
         foreach ($data as $key) {
             $value = isset($infos[$key]) ? $infos[$key] : false;
             if (empty($value)) {
-                exit('param error ' . $key);
+                $this->_messageInfo('参数“' . $key . '"不能为空', $this->application->domain . 'lbs/survey', 5000);
             }
             $sql .= "`{$key}` = '{$value}',";
         }
@@ -109,15 +167,25 @@ class SurveyController extends ControllerAbstract
         $sql .= "`user_agent` = '{$userAgent}'";
         $insertSql = "INSERT INTO `workstudio_test`.`wt_survey` SET {$sql}";
         $result = @mysql_query($insertSql);
-        var_dump($result);
-        exit();
+
+        $message = $result ? '提交成功，谢谢您的参与！' : '提交失败，请重新提交！';
+        $urlForward = $result ? '' : $this->application->domain . 'lbs/survey';
+        $this->_messageInfo($message, $urlForward, 5000);
+    }
+
+    private function _validRole($isShow = false)
+    {
+        $role = isset($_GET['role']) ? $_GET['role'] : false;
+        $valid = !empty($role) && $role == 'iamldbs';
+
+        return $valid;
     }
 
     private function _getQuestions()
     {
         $baseQuestions = array(
             'age' => array('title' => '年龄'),
-            'jobs_address' => array('title' => '工作地点'),
+            'job_address' => array('title' => '工作地点'),
             'career' => array('title' => '职业'),
             'mapapp' => array('title' => '目前使用的地图APP'),
         );
