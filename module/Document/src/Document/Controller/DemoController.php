@@ -11,7 +11,8 @@ class DemoController extends ControllerAbstract
         $this->currentModule = 'Document';
         parent::__construct();
 
-        $this->docsPath = 'E:\tmp\docs';
+        $this->localConfig = require $this->modulePath . '/config/local.php';
+        $this->docsPath = $this->localConfig['docsPath'];
         $this->docsTool = new DocsTool($this->docsPath);
     }
 

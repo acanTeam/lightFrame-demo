@@ -80,7 +80,7 @@ class FilesysController extends ControllerAbstract
         Directory::mkdir(dirname($targetFile));
         $command = "{$config['phumlCommand']} -r {$directory} -graphviz -createAssociations false -Neato {$targetFile}";
         echo $command . '<br />';
-        //exec($command, $output);
+        exec($command, $output);
     }
 
     public function removeBom()
