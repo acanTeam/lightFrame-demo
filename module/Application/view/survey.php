@@ -98,7 +98,7 @@ function gotoUse(){
                 <th><div class="table-col-text">我觉得不好</div></th>
               </tr>
               <tr data-group="<?php echo $elem; ?>" data-mandatory="1">
-                <?php $titleInfo = $elem == $haveCode ? '<td data-child="1"><div class="table-question-text"><strong>如果实现这个需求，你感觉如何？</strong></div></td>' : '<td data-child="2"><div class="table-question-text"><strong>如果不实现这个需求，你感觉如何？</strong></div></td>'; echo $titleInfo; ?>
+                <?php $titleInfo = $elem == $haveCode ? '<td data-child="1"><div class="table-question-text">如果<strong>实现</strong>这个需求，你感觉如何？</div></td>' : '<td data-child="2"><div class="table-question-text">如果<strong>不实现</strong>这个需求，你感觉如何？</div></td>'; echo $titleInfo; ?>
                 <?php for ($j = 1; $j < 6; $j++) { ?>
                 <td>
                 <div class="answer-table-radio <?php if (isset($values[$elem]) && $values[$elem] == $j) { echo 'checked'; } ?>" style="height: 35px; line-height: 35px;">

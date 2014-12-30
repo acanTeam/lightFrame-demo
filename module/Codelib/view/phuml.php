@@ -11,8 +11,8 @@
     </div>
   </div>
 </div>
-<?php foreach ($files as $key => $info) { ?>
 <div class="container">
+<?php foreach ($files as $key => $info) { ?>
   <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar" role="navigation">
     <div class="list-group">
     <?php
@@ -23,5 +23,5 @@
     } ?>
     </div>
   </div>
-</div>
 <?php } ?>
+</div>

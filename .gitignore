@@ -11,4 +11,4 @@ composer.lock
 *.swp
 *.svn
 /module/Application/Views/cache
-*local.*.php
+*local*.php

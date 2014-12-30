@@ -125,7 +125,7 @@ class SurveyController extends ControllerAbstract
     public function index()
     {
         $questions = $this->_getQuestions();
-        $values = $_GET;
+        $values = array();//$_GET;
         $sign = $this->_getRandomStr();
         $_SESSION['sign'] = $sign;
         $data = array(
