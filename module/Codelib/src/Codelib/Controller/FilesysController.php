@@ -43,11 +43,12 @@ class FilesysController extends ControllerAbstract
 
     public function phuml()
     {
+        $commandContent = '';
         $umlConfigs = require $this->configPath . 'local.phuml.php';
 
         $shellContent = '';
         foreach ($umlConfigs['paths'] as $code => $directory) {
-            $this->_createPng($code, $directory, $umlConfigs);
+            $commandContent .= $this->_createPng($code, $directory, $umlConfigs);
 
         }
 
@@ -60,9 +61,13 @@ class FilesysController extends ControllerAbstract
             $subDirectorys = Directory::read($directory);
             foreach ($subDirectorys as $subDirectory) {
                 $basename = basename($subDirectory);
-                $this->_createPng($code . '_' . $basename, $subDirectory, $umlConfigs);
+                $commandContent .= $this->_createPng($code . '_' . $basename, $subDirectory, $umlConfigs);
             }
         }
+        echo $commandContent;
+
+        $commandFile = $this->modulePath . '/cache/commandFile.sh';
+        file_put_contents($commandFile, $commandContent);
     }
 
     private function _createPng($code, $directory, $config)
@@ -74,13 +79,15 @@ class FilesysController extends ControllerAbstract
 
         $code = str_replace('_', '/', $code);
         $targetFile = str_replace($directory, $config['targetPath'] . '/' . $code, $directory) . '.png';
+        $command = "{$config['phumlCommand']} -r {$directory} -graphviz -createAssociations false -Neato {$targetFile}";
+
         if (file_exists($targetFile) && filesize($targetFile) > 0) {
-            return ;
+            return $command . "\n";
         }
         Directory::mkdir(dirname($targetFile));
-        $command = "{$config['phumlCommand']} -r {$directory} -graphviz -createAssociations false -Neato {$targetFile}";
-        echo $command . '<br />';
-        exec($command, $output);
+        //exec($command, $output);
+
+        return $command . "\n";
     }
 
     public function removeBom()

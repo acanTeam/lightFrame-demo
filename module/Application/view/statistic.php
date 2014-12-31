@@ -1,6 +1,7 @@
 <link href="<?php echo $application->configCommon['assetUrl']; ?>bootstrap/demo/css/theme.css" rel="stylesheet">
 <div class="container theme-showcase" role="main">
 
+  <h1>参与投票人数:<?php echo $allNum; ?></h1>
   <div class="page-header"><h3>问卷列表</h3></div>
   <div class="row">
     <div class="col-md-12">
