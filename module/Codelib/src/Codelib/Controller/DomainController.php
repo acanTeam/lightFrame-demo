@@ -11,8 +11,8 @@ class DomainController extends ControllerAbstract
         $this->currentModule = 'Codelib';
         parent::__construct();
 
-        //http://frame.91zuiai.biz/codelib/domain/local
-        //http://frame.91zuiai.com/codelib/domain/remote
+        //http://www.acanstudio.biz/codelib/domain/local
+        //http://www.acanstudio.com/codelib/domain/remote
         //php /var/htmlwww/acanstudio/commandConfigShell/php/smallcode/createDomain.php
     }
 
@@ -154,7 +154,7 @@ class DomainController extends ControllerAbstract
                 'asset' => array('path' => 'common/asset'),
                 'upload' => array('path' => 'common/upload'),
                 'dphp' => array('path' => 'common/dphp'),
-                'www' => array('path' => 'common'),
+                'www' => array('path' => 'wangcan/lightFrame-demo/public'),
                 'docs' => array('path' => 'final/docsold', 'extInfo' => 'rewriteDocs'),
                 'blog' => array('path' => 'acanstudio/blog/public'),
     

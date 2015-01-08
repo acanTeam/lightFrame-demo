@@ -9,7 +9,17 @@ class IndexController extends ControllerAbstract
     {
         $this->currentModule = 'Application';
         parent::__construct();
-        //echo 'init index';
+    }
+
+    public function index()
+    {
+        $navbarInfos = $this->_getNavbar();
+        $data = array(
+            'navbarInfos' => $navbarInfos,
+            'application' => $this->application
+        );
+        
+        $this->application->render('index', $data);
     }
 
     public function form()

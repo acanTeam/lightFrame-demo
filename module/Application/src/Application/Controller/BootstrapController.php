@@ -108,7 +108,7 @@ class BootstrapController extends ControllerAbstract
                     'url' => 'http://getbootstrap.com/'
                 ),
                 array(
-                    'name' => 'Bootstrap正文网', 
+                    'name' => 'Bootstrap中文网', 
                     'url' => 'http://www.bootcss.com/'
                 ),
                 array(

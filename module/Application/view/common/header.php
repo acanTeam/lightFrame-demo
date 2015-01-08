@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]> <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]> <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]> <!--> <html class="no-js"> <!--<![endif]-->
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -8,7 +12,7 @@
   <meta name="author" content="acanstudio">
   <link rel="icon" href="<?php echo $application->configCommon['assetUrl']; ?>common/favicon.ico">
 
-  <title>Theme Template for Bootstrap</title>
+  <title>acanstudio</title>
 
   <link href="<?php echo $application->configCommon['assetUrl']; ?>bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="<?php echo $application->configCommon['assetUrl']; ?>bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
