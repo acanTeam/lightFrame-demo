@@ -16,10 +16,11 @@ class IndexController extends ControllerAbstract
         $navbarInfos = $this->_getNavbar();
         $data = array(
             'navbarInfos' => $navbarInfos,
-            'application' => $this->application
+            'application' => $this->application,
+            'infos' => $this->_getInfos(),
         );
         
-        $this->application->render('index', $data);
+        $this->application->layout('index', 'index_layout', $data);
     }
 
     public function form()
@@ -32,24 +33,52 @@ class IndexController extends ControllerAbstract
         $this->application->render('map');
     }
 
-    public function bootstrap()
+    private function _getInfos()
     {
-        $params = func_get_args();
-        $currentTemplate = isset($params[0]) ? $params[0] : '';
-        $templates = array(
-            'blog', 'carousel', 'cover', 'dashboard', 'grid',
-            'jumbotron', 'jumbotron-narrow', 'justified-nav',
-            'nav', 'navbar', 'navbar-fixed-top', 'navbar-satic-top',
-            'non-responsive', 'offcanvas', 'signin', 'starter-template',
-            'sticky-footer', 'sticky-footer-navbar', 'theme', 'nav'
-        );
-        $currentTemplate = in_array($currentTemplate, $templates) ? $currentTemplate : 'default';
-        $data = array(
-            'currentTemplate' => $currentTemplate,
-            'templates' => $templates,
-            'application' => $this->application
+        $docsElems = array(
+            'structure' => array(
+                'name' => '数据结构和算法',
+                'url' => '',
+                'thumb' => 'http://www.bootcss.com/p/google-bootstrap/assets/img/example-sites/kippt.png',
+            ),
+            'structure1' => array(
+                'name' => '数据结构和算法',
+                'url' => '',
+                'thumb' => 'http://www.bootcss.com/p/google-bootstrap/assets/img/example-sites/kippt.png',
+            ),
+            'structure2' => array(
+                'name' => '数据结构和算法',
+                'url' => '',
+                'thumb' => 'http://www.bootcss.com/p/google-bootstrap/assets/img/example-sites/kippt.png',
+            ),
+            'structure3' => array(
+                'name' => '数据结构和算法',
+                'url' => '',
+                'thumb' => 'http://www.bootcss.com/p/google-bootstrap/assets/img/example-sites/kippt.png',
+            ),
         );
 
-        $this->application->layout('bootstrap/' . $currentTemplate, 'common/layout', $data);
+        $infos = array(
+            'docs' => array(
+                'title' => '文档系统',
+                'url' => 'docs',
+                'description' => '基于markdown轻量级标记语言，把工作和学习过程中的知识体系结构以文档的形式表现出来。',
+                'elems' => $docsElems
+            ),
+            'bootstrap' => array(
+                'title' => 'bootstrap',
+                'url' => 'bootstrap',
+                'description' => '基于boostrap和bootstrap中文网，搜集整理bootstrap能为我所用的相关资源',
+                'elems' => $docsElems
+            ),
+            'lightFrame' => array(
+                'title' => 'lightFrame框架',
+                'url' => 'lightFrame',
+                'description' => '自主研发的基于PHP5.3以上版本的PHP轻量级框架',
+                'elems' => $docsElems
+            ),
+        );
+
+        return $infos;
     }
 }

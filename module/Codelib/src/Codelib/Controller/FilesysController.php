@@ -134,4 +134,21 @@ class FilesysController extends ControllerAbstract
         	}
         }
     }
+
+    protected function changeNames()
+    {
+        $path = 'E:/www/wangcan/lightFrame/library/Structure/Interface/';
+
+        $files = Directory::read($path);
+        foreach ($files as $file) {
+            $baseName = basename($file);
+            //$baseName = substr($baseName, 1, -4);
+            $baseName = substr($baseName, 9);
+            //$targetName = dirname($file) . $baseName . 'Interface.php';
+            $targetName = dirname($file) . '/' . $baseName;
+            rename($file, $targetName);
+            echo $file . '<br />';
+            echo $targetName . '<br />';
+        }
+    }
 }

@@ -8,6 +8,7 @@ return array(
             $application->layout('map', 'common/layout', array('application' => $application));
         }),
         'index' => array('/', '\Application\Controller\IndexController:index'),
+        'soft' => array('/soft', '\Application\Controller\SoftController:index'),
         'form' => array('/bootstrap/form', '\Application\Controller\IndexController:form'),
         'listinfo' => array('/lbs/listinfo', '\Application\Controller\SurveyController:listinfo'),
         'statistic' => array('/lbs/statistic', '\Application\Controller\SurveyController:statistic'),
