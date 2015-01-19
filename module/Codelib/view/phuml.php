@@ -1,27 +1,50 @@
-<link href="<?php echo $application->configCommon['assetUrl']; ?>bootstrap/demo/css/offcanvas.css" rel="stylesheet">
-<div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+<header class="jumbotron subhead" id="overview">
   <div class="container">
-    <div class="navbar-header"><a class="navbar-brand" href="<?php echo 'baseUrl'; ?>">UML of PHP</a></div>
-    <div class="collapse navbar-collapse">
-      <ul class="nav navbar-nav">
-      <?php foreach ($infos as $basePath => $info) { if ($basePath == '_files') { continue; } ?>
-        <li <?php if ($currentPath == $basePath) echo 'class="active"'; ?>><a href="<?php echo 'url'; ?>"><?php echo $basePath; ?></a></li>
-      <?php } ?>
+    <h1>PHP相关的UML图</h1>
+    <p class="lead">包括ZF2、PHPUnit、Composer等开源项目的UML图，PHP内置类库的UML图，如SPL等；其他PHP代码的UML图；这些图都是由phUML工具生成</p>
+  </div>
+</header>
+
+<div class="container">
+  <div class="row">
+    <div class="span3 bs-docs-sidebar">
+      <ul class="nav nav-list bs-docs-sidenav">
+        <?php foreach($paths as $path) { ?>
+        <li><a href="#<?php echo $path; ?>"><i class="icon-chevron-right"></i><?php echo $path; ?></a></li>
+        <?php } ?>
       </ul>
     </div>
-  </div>
-</div>
-<div class="container">
-<?php foreach ($files as $key => $info) { ?>
-  <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar" role="navigation">
-    <div class="list-group">
-    <?php
-    foreach ($info as $file) {
-      $fileBase = basename($file);
-      $url = str_replace($application->configCommon['uploadPath'], $application->configCommon['uploadUrl'], $file);
-      echo '<a href="' . $url . '" class="list-group-item" target="_blank">' . $fileBase . '</a>';
-    } ?>
+    <div class="span9">
+      <?php foreach ($paths as $path) { ?>
+      <section id="<?php echo $path; ?>">
+        <h2><?php echo $path; ?></h2>
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr><th  colspan="4">UML图列表</th></tr>
+          </thead>
+          <tbody>
+<?php
+$i = 0; 
+foreach ($files[$path] as $file) { 
+    if ($i / 4 == 0) { 
+        echo '<tr>'; 
+    } 
+    $url = str_replace($application->configCommon['uploadPath'], $application->configCommon['uploadUrl'], $file);
+    echo '<td><a href="' . $url . '" class="list-group-item" target="_blank">' . basename($file) . '</a></td>';
+    if ($i % 4 == 3) { 
+        echo '</tr>'; 
+    } 
+    $i++; 
+} 
+if ($i % 4 !=  3) { 
+    echo '</tr>'; 
+} 
+?>
+          </tbody>
+        </table>
+
+      </section>
+      <?php } ?>
     </div>
   </div>
-<?php } ?>
 </div>

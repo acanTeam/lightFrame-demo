@@ -1,13 +1,14 @@
 <?php
 namespace Document\Util;
 
-use Document\Util\Page\Error as ErrorPage;
-use Document\Util\Page\Markdown as MarkdownPage;
-
 class DocsTool
 {
     const STATIC_MODE = 'DOCS_STATIC';
     const LIVE_MODE = 'DOCS_LIVE';
+
+    const NORMAL_ERROR_TYPE = 'NORMAL_ERROR';
+    const MISSING_PAGE_ERROR_TYPE = 'MISSING_PAGE_ERROR';
+    const FATAL_ERROR_TYPE = 'FATAL_ERROR';
 
     public static $validExtensions;
 
@@ -106,7 +107,7 @@ class DocsTool
                 return $this->_saveFile($request, $content);
             }
             return $this->_getMessage('Editing Disabled', 'Editing is currently disabled in config',
-                ErrorPage::FATAL_ERROR_TYPE);
+                self::FATAL_ERROR_TYPE);
         }
 
         return $this->_getPage($request);
@@ -155,19 +156,20 @@ class DocsTool
     {
         $file = $this->_getFileFromReqeust($request);
         if ($file === false) return $this->_getMessage('Page Not Found',
-            'The Page you requested is yet to be made. Try again later.', ErrorPage::MISSING_PAGE_ERROR_TYPE);
+            'The Page you requested is yet to be made. Try again later.', self::MISSING_PAGE_ERROR_TYPE);
         if ($file->write($content)) return new SimplePage('Success', 'Successfully Edited');
         else return $this->_getMessage('File Not Writable', 'The file you wish to write to is not writable.',
-            ErrorPage::FATAL_ERROR_TYPE);
+            self::FATAL_ERROR_TYPE);
     }
 
     private function _getPage($request)
     {
         $options = $this->options;
         $file = $this->_getFileFromReqeust($request);
+        print_r($file);exit();
         if ($file === false) {
             return $this->_getMessage('Page Not Found',
-                'The Page you requested is yet to be made. Try again later.', ErrorPage::MISSING_PAGE_ERROR_TYPE);
+                'The Page you requested is yet to be made. Try again later.', self::MISSING_PAGE_ERROR_TYPE);
         }
         $options['request'] = $request;
         $options['file_uri'] = $file->value;
@@ -185,7 +187,7 @@ class DocsTool
         $mode = $mode === '' ? $this->mode : $mode;
         $options['mode'] = $options['error_type'] = $mode;
 
-        if ($mode == ErrorPage::FATAL_ERROR_TYPE) {
+        if ($mode == self::FATAL_ERROR_TYPE) {
             $this->options = array_merge($this->options, $options);
             return ;
         }

@@ -21,21 +21,31 @@ class FilesysController extends ControllerAbstract
         $pngPath = $path . 'phuml/';
 
         $infos = Directory::getTree($pngPath);
-
         $files = $this->getFiles($infos);
+        $paths = array_keys($files);
+        sort($paths);
 
-        $this->application->layout('phuml', 'common/layout', array('infos' => $infos, 'files' => $files, 'currentPath' => '', 'application' => $this->application));
+        $navbarInfos = $this->_getNavbar();
+        $data = array(
+            'navbarInfos' => $navbarInfos,
+            'paths' => $paths,
+            'files' => $files,
+            'application' => $this->application
+        );
+        $this->application->layout('phuml', 'common/google_layout', $data);
     }
 
     private function getFiles($infos, $parentCode = '')
     {
         static $files = array();
         
+        $parentCodeKey = empty($parentCode) ? 'root' : $parentCode;
         foreach ($infos as $code => $info) {
             if ($code == '_files') {
-                $files[$parentCode . '_' . $code] = $info;
+                $files[$parentCodeKey] = $info;
             } else {
-                $this->getFiles($info, $code);
+                $parentCodeNew = empty($parentCode) ? $code : $parentCode  . '_' . $code;
+                $this->getFiles($info, $parentCodeNew);
             }
         }
         return $files;

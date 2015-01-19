@@ -65,5 +65,6 @@
 <script src="//cdnjs.bootcss.com/ajax/libs/twitter-bootstrap/2.2.2/bootstrap.min.js"></script>
 <script src="//cdnjs.bootcss.com/ajax/libs/prettify/r224/prettify.js"></script>
 <script src="//cdnjs.bootcss.com/ajax/libs/select2/3.3.1/select2.min.js"></script>
+<script src="<?php echo $application->configCommon['assetUrl']; ?>bootstrap/demo/bootcss/google/js/application.js"></script>
 </body>
 </html>

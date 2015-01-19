@@ -27,7 +27,7 @@
         <?php foreach($info['elems'] as $key => $elem) { ?>        
         <li class="span3">
           <a class="thumbnail" href="<?php echo $elem['url']; ?>" target="_blank">
-            <img src="<?php echo $elem['thumb']; ?>" alt="<?php echo $key; ?>">
+            <img src="<?php echo $application->configCommon['uploadUrl'] . $elem['thumb']; ?>" alt="<?php echo $key; ?>">
           </a>
         </li>
         <?php } ?>

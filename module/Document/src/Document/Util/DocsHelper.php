@@ -108,7 +108,7 @@ class DocsHelper
         } else {
             return false;
         }
-        $uri = str_replace('/document/demo', '', $uri);
+        $uri = str_replace('/document', '', $uri);
 
         $uri = str_replace(array('//', '../'), '/', trim($uri, '/'));
         $uri = empty($uri) ? 'first_page' : $uri;

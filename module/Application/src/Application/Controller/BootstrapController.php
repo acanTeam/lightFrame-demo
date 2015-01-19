@@ -30,11 +30,17 @@ class BootstrapController extends ControllerAbstract
         );
 
         $this->application->layout('bootstrap/' . $currentDemo, 'common/layout', $data);
-        //$this->application->render('bootstrap/' . $currentDemo, $data);
     }
 
-    public function example()
+    public function plugin()
     {
+        $navbarInfos = $this->_getNavbar();
+        $data = array(
+            'navbarInfos' => $navbarInfos,
+            'application' => $this->application
+        );
+
+        $this->application->layout('bootstrap/plugin', 'common/google_layout', $data);
     }
 
     protected function _getDemoInfos()
@@ -101,33 +107,24 @@ class BootstrapController extends ControllerAbstract
     protected function _getNavbar()
     {
         $navbarInfos = array(
-            'index' => array('name' => 'Bootstrap', 'url' => 'demo'),
-            'menus' => array(
-                array(
-                    'name' => 'Bootstrap官网', 
-                    'url' => 'http://getbootstrap.com/'
-                ),
-                array(
-                    'name' => 'Bootstrap中文网', 
-                    'url' => 'http://www.bootcss.com/'
-                ),
-                array(
-                    'name' => '官方DEMO', 
-                    'url' => 'demo'
-                ),
-                array(
-                    'name' => '经典案例', 
-                    'url' => 'example'
-                ),
-                'multiple_5' => array(
-                    'name' => 'github资源',
-                    'menus' => array(
-                        array('name' => 'bootstrap', 'url' => ''),
-                        array('name' => 'bootcss', 'url' => ''),
-                        array('name' => 'bootswatch', 'url' => ''),
-                    )
-                ),
+            array(
+                'name' => '官方DEMO', 
+                'url' => $this->application->domain . 'bootstrap', 
             ),
+            array(
+                'name' => '前端资源', 
+                'url' => $this->application->domain . 'bootstrap/plugin', 
+            ),
+            /*'multiple_5' => array(
+                'name' => '相关外部资源',
+                'menus' => array(
+                    array('name' => 'Bootstrap官网', 'url' => 'http://getbootstrap.com/'),
+                    array('name' => 'Bootstrap中文网', 'url' => 'http://www.bootcss.com/'),
+                    array('name' => 'git-bootstrap', 'url' => ''),
+                    array('name' => 'git-bootcss', 'url' => ''),
+                    array('name' => 'git-bootswatch', 'url' => ''),
+                )
+            ),*/
         );
         return $navbarInfos;
     }
