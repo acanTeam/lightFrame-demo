@@ -1,21 +1,47 @@
 <div class="container-fluid fluid-height wrapper">
   <div class="row columns content">
+
     <div class="left-column article-tree col-sm-3 hidden-print">
+      <!-- For Mobile -->
       <div class="responsive-collapse">
-        <button type="button" class="btn btn-sidebar" id="menu-spinner-button">
+        <button id="menu-spinner-button" class="btn btn-sidebar" type="button">
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
       </div>
-      <div id="sub-nav-collapse" class="sub-nav-collapse">
+      <div class="sub-nav-collapse" id="sub-nav-collapse">
+        <!-- Navigation -->
+        <!--<ul class="nav nav-list">
+          <li><a href="//daux.io/Getting_Started">Getting Started</a></li>
+          <li class="open">
+            <a class="folder" href="//daux.io/Examples">Examples</a>
+            <ul class="nav nav-list">
+<li class="open">
+            <a class="aj-nav folder" href="#">More Examples</a>
+            <ul class="nav nav-list">
+              <li><a href="//daux.io/More_Examples/Hello_World">Hello World</a></li>
+            </ul>
+</li>
+              <li><a href="//daux.io/Examples/GitHub_Flavored_Markdown">GitHub Flavored Markdown</a></li>
+              <li class="active"><a href="//daux.io/Examples/Code_Highlighting">Code Highlighting</a></li>
+            </ul>
+          </li>
+          <li>
+            <a class="aj-nav folder" href="#">More Examples</a>
+            <ul class="nav nav-list">
+              <li><a href="//daux.io/More_Examples/Hello_World">Hello World</a></li>
+            </ul>
+          </li>
+        </ul>-->
+
         <?php echo $data['navigation']; ?>
         <div class="well well-sidebar">
-          <?php foreach (array('a' => 'b', 'c' => 'd') as $name => $url) echo '<a href="' . $url . '" target="_blank">' . $name . '</a><br>'; ?>
+          <?php foreach (array('和呵呵呵呵呵呵' => 'b', 'csssss' => 'd') as $name => $url) { echo '<a href="' . $url . '" target="_blank">' . $name . '</a><br>'; } ?>
+          <a onclick="toggleCodeBlocks();" id="toggleCodeBlockBtn" href="#">Show Code Blocks Inline</a><br>
           <?php foreach (array('a', 'b', 'c') as $handle) { ?>
           <div class="twitter">
-            <hr/>
-            <iframe allowtransparency="true" frameborder="0" scrolling="no" style="width:162px; height:20px;" src=""></iframe>
+            <hr/><iframe allowtransparency="true" frameborder="0" scrolling="no" style="width:162px; height:20px;" src=""></iframe>
           </div>
           <?php } ?>
         </div>

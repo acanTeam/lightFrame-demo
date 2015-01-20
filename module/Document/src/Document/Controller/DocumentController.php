@@ -2,7 +2,7 @@
 namespace Document\Controller;
 
 use \Light\Mvc\Controller\ControllerAbstract as ControllerAbstract;
-use Document\Util\DocsTool as DocsTool;
+use Document\Util\DocumentTool;
 
 class DocumentController extends ControllerAbstract
 {
@@ -13,14 +13,12 @@ class DocumentController extends ControllerAbstract
 
         $this->localConfig = require $this->modulePath . '/config/local.php';
         $this->docsPath = $this->localConfig['docsPath'];
-        $this->docsTool = new DocsTool($this->docsPath);
-
-        $this->globalConfigs = $this->_init();
+        $this->documentTool = new DocumentTool($this->docsPath);
     }
 
     public function index()
     {
-        $docsInfos = $this->_getDocsInfos();
+        $docsInfos = $this->documentTool->getDocsInfos();
 
         $navbarInfos = $this->_getNavbar();
         $navbarContent = $this->_getNavbarContent($navbarInfos);
@@ -40,93 +38,67 @@ class DocumentController extends ControllerAbstract
 
         $appParam = array_shift($pathInfos);
         if ($appParam != 'document') {
-            exit('document app error');
+            throw new \Exception("url path error, '{$appParam}' isn't a valid url path");
         }
+
+        $info = $this->documentTool->getDocsInfo($pathInfos);
+        $this->baseUrl = $this->application->domain . 'document/' . $info['docs'] . '/';
         
-        $docsParam = array_shift($pathInfos);
-        $docsPath = $this->docsPath . $docsParam;
-        if (!is_dir($docsPath)) {
-            exit("docs '{$docsParam}' no exist!");
+        $data['breadcrumb'] = '';//$this->_getBreadcrumb($structureInfos, $currentKey);
+        $data['navigation'] = $this->_getNavigation($info['structureInfos']);
+        $data['content'] = $this->_getContent($info['markdownFile']);//file, $options);
+
+        $this->application->layout('document', 'docs_layout', array('data' => $data, 'application' => $this->application));
+    }
+
+    private function _getBreadcrumb($file, $options)
+    {
+        $parents = $options['isMulLanguage'] && !empty($file->parents) ? array_splice($file->parents, 1) : $file->parents; 
+        if (empty($parents)) {
+            return $file->title;
         }
 
-        $configs = $this->globalConfigs;
-        $configFile = $docsPath . '/config.json';
-        if (file_exists($configFile)) {
-            $configs = json_decode(file_get_contents($configFile), true);
-            $configs = array_merge($this->globalConfigs, $configs);
+        $title = '';
+        $separator = ' <i class="glyphicon glyphicon-chevron-right"></i> ';
+        foreach ($parents as $node) {
+            $url = $options['base_page'] . $node->getUrl();
+            $title .= "<a href='{$url}'>{$node->title}</a>{$separator}";
         }
+        $title .= $file->title;
 
-        $structureFile = $docsPath . '/structure.json';
-        if (!file_exists($structureFile)) {
-            exit('structure file no exist');
-        }
+        return $title;
+    }
 
-        $structureInfos = json_decode(file_get_contents($structureFile), true);
-        $currentElem = $structureInfos;
-        $path = array_shift($pathInfos);
-        $pathFull = $docsPath . '/';
-        while ($path) {
-            if (isset($currentElem[$path])) {
-                $currentElem = $currentElem[$path];
-            } elseif (isset($currentElem['files']) && isset($currentElem['files'][$path])) {
-                $currentElem = $currentElem['files'][$path];
+    private function _getContent($file)
+    {
+        $contentSource = file_get_contents($file);
+        $parsedown = new \Document\Util\Parsedown();
+        $content = $parsedown->text($contentSource);
+
+        return array('contentSource' => $contentSource, 'content' => $content);
+    }
+
+    private function _getNavigation($structureInfos, $currentUrl = '', $pathInfo = '')
+    {
+        $navigation = '<ul class="nav nav-list">';
+
+        foreach ($structureInfos as $key => $info) {
+            $currentPathInfo = $pathInfo . $key;
+            $link = $this->baseUrl . $currentPathInfo;
+
+            if (!isset($info['subElems'])) {
+                $activeClass = isset($info['isCurrent']) && $info['isCurrent'] ? ' class="active"' : '';
+                $navigation .= "<li {$activeClass}><a href='{$link}'>{$info['title']}</a></li>";
             } else {
-                exit($pathFull . ' error');
-            }
+                $openClass = ' class="open"';//isset($info['isCurrent']) && $info['isCurrent'] ? ' class="open"' : '';
+                $elem = "<a href='{$link}' class='folder'>{$info['title']}</a>";
+                // "<a href='javascript:void(0);' class='aj-nav folder'>{$node->title}</a>";
+                $subNavigation = $this->_getNavigation($info['subElems'], $currentUrl, $currentPathInfo . '/');
 
-            $path = array_shift($pathInfos);
-
-            $pathFull .= $path . '/';
-        }
-
-        $markdownFile = '';
-        if (is_dir($pathFull)) {
-        } else {
-        foreach ($this->globalConfigs[''] as $ext) {
-            $markdownFile = $pathFull . $ext;
-            if (file_exists($markdownFile)) {
-                break ;
+                $navigation .= "<li {$openClass}>{$elem}{$subNavigation}</li>";
             }
         }
-        }
 
-        if (empty($markdownFile) && !is_dir($pathFull)) {
-            exit('nofile');
-        }
-
-
-            
-
-        print_r($currentElem);
-        
-    }
-
-    private function _init()
-    {
-        $globalConfigFile = $this->docsPath . DIRECTORY_SEPARATOR . 'global.json';
-        if (!file_exists($globalConfigFile)) {
-            return $this->_getMessage('GLOBAL_CONFIG_MISSING', $globalConfigFile);
-        }
-        $globalConfigs = json_decode(file_get_contents($globalConfigFile), true);
-
-        $defaultConfigFile = $this->docsPath . DIRECTORY_SEPARATOR . 'default.json';
-        if (!file_exists($defaultConfigFile)) {
-            return $this->_getMessage('DEFAULT_CONFIG_MISSING', $globalConfigFile);
-        }
-        $defaultConfigs = json_decode(file_get_contents($defaultConfigFile), true);
-
-        $globalConfigs = array_merge($globalConfigs, $defaultConfigs);
-        return $globalConfigs;
-    }
-
-    private function _getDocsInfos()
-    {
-        $docsConfigFile = $this->docsPath . DIRECTORY_SEPARATOR . 'docs.json';
-        if (!file_exists($docsConfigFile)) {
-            return $this->_getMessage('docs_CONFIG_MISSING', $docsConfigFile);
-        }
-        $docsInfos = json_decode(file_get_contents($docsConfigFile), true);
-
-        return $docsInfos;
-    }
+        return $navigation . '</ul>';
+    }    
 }
