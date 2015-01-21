@@ -1,3 +1,7 @@
+<?php 
+$links = isset($configs['links']) && is_array($configs['links']) ? $configs['links'] : false; 
+$thirds = isset($configs['thirds']) && is_array($configs['thirds']) ? $configs['thirds'] : false; 
+?>
 <div class="container-fluid fluid-height wrapper">
   <div class="row columns content">
 
@@ -35,15 +39,15 @@
           </li>
         </ul>-->
 
-        <?php echo $data['navigation']; ?>
+        <?php echo $navigation; ?>
         <div class="well well-sidebar">
-          <?php foreach (array('和呵呵呵呵呵呵' => 'b', 'csssss' => 'd') as $name => $url) { echo '<a href="' . $url . '" target="_blank">' . $name . '</a><br>'; } ?>
-          <a onclick="toggleCodeBlocks();" id="toggleCodeBlockBtn" href="#">Show Code Blocks Inline</a><br>
-          <?php foreach (array('a', 'b', 'c') as $handle) { ?>
+          <?php if (!empty($links)) { foreach ($links as $link => $linkTitle) { echo '<a href="' . $link . '" target="_blank">' . $linkTitle . '</a><br>'; } } ?>
+          <a id="toggleCodeBlockBtn" href="javascript: toggleCodeBlocks();">Show Code Blocks Inline</a><br>
+          <?php if (!empty($thirds)) { foreach ($thirds as $third) { ?>
           <div class="twitter">
-            <hr/><iframe allowtransparency="true" frameborder="0" scrolling="no" style="width:162px; height:20px;" src=""></iframe>
+            <hr/><iframe allowtransparency="true" frameborder="0" scrolling="no" style="width:162px; height:20px;" src="<?php echo $third; ?>"></iframe>
           </div>
-          <?php } ?>
+          <?php } } ?>
         </div>
       </div>
     </div>
@@ -52,14 +56,14 @@
         <article>
           <?php if (true) { //$params['date_modified']) { ?>
             <div class="page-header sub-header clearfix">
-              <h1><?php echo $data['breadcrumb']; ?>
+              <h1><?php echo $breadCrumb; ?>
                 <?php //if ($page['file_editor']) echo '<a href="javascript:;" id="editThis" class="btn">Edit this page</a>'; ?>
               </h1>
               <span style="float: left; font-size: 10px; color: gray;">
-                <?php echo date('Y-m-d H:i:s'); //date("l, F j, Y", $page['modified_time']);?>
+                <?php //echo date('Y-m-d H:i:s'); //date("l, F j, Y", $page['modified_time']);?>
               </span>
               <span style="float: right; font-size: 10px; color: gray;">
-                <?php echo date('Y-m-d H:i:s');//date("g:i A", $page['modified_time']);?>
+                <?php //echo date('Y-m-d H:i:s');//date("g:i A", $page['modified_time']);?>
               </span>
             </div>
           <?php } else { ?>
@@ -72,7 +76,7 @@
             </div>
           <?php } ?>
 
-          <?php echo $data['content']['content']; ?>
+          <?php echo $fileInfo['content']; ?>
           <?php if (false) {//$page['file_editor']) { ?>
             <div class="editor<?php echo 'paddingtop'; //if(!$params['date_modified']) echo ' paddingTop'; ?>">
               <h3>You are editing <?php echo 'path'; ?>&nbsp;<a href="javascript:;" class="closeEditor btn btn-warning">Close</a></h3>
@@ -81,7 +85,7 @@
                   <a href="javascript:;" class="save_editor btn btn-primary navbar-btn pull-right">Save file</a>
                 </div>
               </div>
-              <textarea id="markdown_editor"><?php echo $data['content']['contentSource'];?></textarea>
+              <textarea id="markdown_editor"><?php echo $fileInfo['contentSource'];?></textarea>
               <div class="clearfix"></div>
             </div>
           <?php } ?>

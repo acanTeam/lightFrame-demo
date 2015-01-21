@@ -33,6 +33,8 @@ class DocumentController extends ControllerAbstract
 
     public function docs()
     {
+        $docsInfos = $this->documentTool->getDocsInfos();
+
         $pathInfo = trim($_SERVER['REQUEST_URI'], '/');
         $pathInfos = explode('/', $pathInfo);
 
@@ -43,30 +45,38 @@ class DocumentController extends ControllerAbstract
 
         $info = $this->documentTool->getDocsInfo($pathInfos);
         $this->baseUrl = $this->application->domain . 'document/' . $info['docs'] . '/';
-        
-        $data['breadcrumb'] = '';//$this->_getBreadcrumb($structureInfos, $currentKey);
-        $data['navigation'] = $this->_getNavigation($info['structureInfos']);
-        $data['content'] = $this->_getContent($info['markdownFile']);//file, $options);
+  
+        $data = array(
+            'breadCrumb' => $this->_getBreadCrumb($info['structureInfos']),
+            'navigation' => $this->_getNavigation($info['structureInfos']),
+            'fileInfo' => $this->_getContent($info['markdownFile']),
+            'application' => $this->application,
+        );
+        $data = array_merge($data, $info);
 
-        $this->application->layout('document', 'docs_layout', array('data' => $data, 'application' => $this->application));
+        $this->application->layout('document', 'docs_layout', $data);
     }
 
-    private function _getBreadcrumb($file, $options)
+    private function _getBreadCrumb($structureInfos)
     {
-        $parents = $options['isMulLanguage'] && !empty($file->parents) ? array_splice($file->parents, 1) : $file->parents; 
-        if (empty($parents)) {
-            return $file->title;
-        }
-
-        $title = '';
+        $breadCrumb = '';
         $separator = ' <i class="glyphicon glyphicon-chevron-right"></i> ';
-        foreach ($parents as $node) {
-            $url = $options['base_page'] . $node->getUrl();
-            $title .= "<a href='{$url}'>{$node->title}</a>{$separator}";
-        }
-        $title .= $file->title;
 
-        return $title;
+        $infos = $structureInfos;
+        while (!empty($infos)) {
+            $subInfos = false;
+            foreach ($infos as $key => $info) {
+                if (isset($info['isCurrent']) && $info['isCurrent']) {
+                    $breadCrumb .= $separator . $info['title'];
+                    $subInfos = isset($info['subElems']) ? $info['subElems'] : false;
+                    break ;
+                }
+            }
+            $infos = $subInfos;
+        }
+        $breadCrumb = trim($breadCrumb, $separator);
+
+        return $breadCrumb;
     }
 
     private function _getContent($file)
@@ -75,7 +85,13 @@ class DocumentController extends ControllerAbstract
         $parsedown = new \Document\Util\Parsedown();
         $content = $parsedown->text($contentSource);
 
-        return array('contentSource' => $contentSource, 'content' => $content);
+        $fileInfo = array(
+            'contentSource' => $contentSource, 
+            'content' => $content,
+            'status' => stat($file),
+        );
+
+        return $fileInfo;
     }
 
     private function _getNavigation($structureInfos, $currentUrl = '', $pathInfo = '')
@@ -90,12 +106,12 @@ class DocumentController extends ControllerAbstract
                 $activeClass = isset($info['isCurrent']) && $info['isCurrent'] ? ' class="active"' : '';
                 $navigation .= "<li {$activeClass}><a href='{$link}'>{$info['title']}</a></li>";
             } else {
-                $openClass = ' class="open"';//isset($info['isCurrent']) && $info['isCurrent'] ? ' class="open"' : '';
-                $elem = "<a href='{$link}' class='folder'>{$info['title']}</a>";
+                //$openClass = isset($info['isCurrent']) && $info['isCurrent'] ? ' class="open"' : '';
+                $elem = "<a href='javascript: void(0);' class='folder'>{$info['title']}</a>";
                 // "<a href='javascript:void(0);' class='aj-nav folder'>{$node->title}</a>";
                 $subNavigation = $this->_getNavigation($info['subElems'], $currentUrl, $currentPathInfo . '/');
 
-                $navigation .= "<li {$openClass}>{$elem}{$subNavigation}</li>";
+                $navigation .= "<li class='open'>{$elem}{$subNavigation}</li>";
             }
         }
 

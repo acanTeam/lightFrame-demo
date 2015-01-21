@@ -45,6 +45,10 @@ class DocumentTool
         if (!is_dir($docsPath)) {
             throw new \Exception("Need a docs path, '{$docsPath}' isn't a path");
         }
+        $docsInfos = $this->getDocsInfos();
+        if (!isset($docsInfos[$docs])) {
+            throw new \Exception("{$docs} is not visited yet!");
+        }
 
         $configs = $this->_getDocsConfigs($docsPath);
         $structureInfos = $this->_getStructureInfos($docsPath);
@@ -52,11 +56,11 @@ class DocumentTool
             $this->_formatStructureInfos($structureInfos, $pathInfos);
         }
 
-        $markdownPath = $docsPath . implode('/', $pathInfos); 
-        $markdownFile = $this->_getMarkdownFile($structureInfos, $pathInfos, $docsPath);
+        $markdownFile = $this->_getMarkdownFile($pathInfos, $docsPath);
 
         $info = array(
             'docs' => $docs,
+            'docsInfo' => $docsInfos[$docs],
             'configs' => $configs,
             'structureInfos' => $structureInfos,
             'markdownFile' => $markdownFile
@@ -96,10 +100,10 @@ class DocumentTool
         return $structureInfos;
     }
 
-    private function _getMarkdownFile(& $structureInfos, $pathInfos, $docsPath)
+    private function _getMarkdownFile($pathInfos, $docsPath)
     {
         $markdownFile = '';
-        $path = $docsPath . '/' . implode('/', (array) $pathInfos);
+        $path = $docsPath . '/' . implode('/', $pathInfos);
         $path = str_replace('//', '/', $path);
         foreach ($this->validExtensions as $extension) {
             $markdownFile = $path . $extension;
@@ -109,15 +113,16 @@ class DocumentTool
         }
 
         if (!is_dir($path)) {
-            throw new \Exception("'{$path}' not a docs path!");
+            //throw new \Exception("'{$path}' not a docs path!");
         }
 
-        $currentElem = $structureInfos;
-        $path = array_shift($pathInfos);
-        while ($path) {
-            $currentElem = $currentElem[$path];
-            $path = array_shift($pathInfos);
+        $defaultFile = $docsPath . 'index.md';
+        $defaultFile = file_exists($defaultFile) ? $defaultFile : $this->docsPath . 'README.md';
+        if (!file_exists($defaultFile)) {
+            throw new \Exception("{$defaultFile} no exists");
         }
+
+        return $defaultFile;
     }
 
     private function _getDocsConfigs($docsPath)
