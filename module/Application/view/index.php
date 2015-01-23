@@ -24,10 +24,10 @@
     <p class="marketing-byline"><?php echo $info['description']; ?><a href="<?php echo $info['url']; ?>">更多相关信息</a></p>
     <div class="row-fluid">
       <ul class="thumbnails example-sites">
-        <?php foreach($info['elems'] as $key => $elem) { ?>        
+        <?php foreach($info['elems'] as $subKey => $elem) { ?>        
         <li class="span3">
-          <a class="thumbnail" href="<?php echo $elem['url']; ?>" target="_blank">
-            <img src="<?php echo $application->configCommon['uploadUrl'] . $elem['thumb']; ?>" alt="<?php echo $key; ?>">
+          <a class="thumbnail" href="<?php echo $application->domain . $elem['url']; ?>" target="_blank">
+            <img src="<?php echo $application->configCommon['uploadUrl'] . 'acanstudio/' . $key . '/' . $subKey . '.png'; ?>" alt="<?php echo $key; ?>">
           </a>
         </li>
         <?php } ?>

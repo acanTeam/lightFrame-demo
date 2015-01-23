@@ -18,7 +18,7 @@ class FilesysController extends ControllerAbstract
     public function phumlshow()
     {
         $path = $this->application->configCommon['uploadPath'];
-        $pngPath = $path . 'phuml/';
+        $pngPath = $path . 'acanstudio/phuml/';
 
         $infos = Directory::getTree($pngPath);
         $files = $this->getFiles($infos);
