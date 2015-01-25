@@ -54,7 +54,7 @@ class IndexController extends ControllerAbstract
 
     public function map()
     {
-        $this->application->render('map');
+        $this->application->layout('map', 'common/layout', array('application' => $this->application));
     }
 
 
