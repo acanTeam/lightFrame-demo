@@ -28,7 +28,7 @@ class StockController extends ControllerAbstract
 
         $infos = require($configPath . 'net767.php');
         foreach ($infos as $key => $info) {
-            $fileFull = $this->_stringEncode($dataPath . $info['title'] . '.txt', 'GBK');
+            $fileFull = $this->_stringEncode($dataPath . $key . '.txt', 'GBK');
             if (!file_exists($fileFull)) {
                 continue;
             }
@@ -40,13 +40,14 @@ class StockController extends ControllerAbstract
             $titles = $result['title'];
             $len = count($urls);
             for ($i = 0; $i < $len; $i++) {
-                $targetFile = $info['path'] . '/' . trim($titles[$i]) . '.md';
+                $title = ($i + 1) . '_' . str_replace(array(':', '?'), '', trim($titles[$i])) . '.md';
+                $targetFile = $info['path'] . '/' . $title;
                 $targetFile = $this->_stringEncode($targetFile, 'GBK');
                 if (!file_exists($targetFile)) {
                     file_put_contents($targetFile, '');
                 }
                 if (filesize($targetFile) < 10) {
-                    echo "<a href='http://www.net767.com{$urls[$i]}' target='_blank'>{$titles[$i]}</a><br />";
+                    echo "<a href='http://www.net767.com{$urls[$i]}' target='_blank'>{$title}</a><br />";
                 }
             }
         }
