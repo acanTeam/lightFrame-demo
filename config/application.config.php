@@ -9,7 +9,7 @@ return array(
     ),
     'modules' => array(
         'Application',
-        'Spider',
+        'Afterwork',
         'Document',
         'Codelib',
     ),

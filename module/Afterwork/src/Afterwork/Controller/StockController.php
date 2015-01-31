@@ -1,5 +1,5 @@
 <?php
-namespace Spider\Controller;
+namespace Afterwork\Controller;
 
 use \Light\Mvc\Controller\ControllerAbstract as ControllerAbstract;
 use \Light\Filesystem\Directory as Directory;
@@ -9,7 +9,7 @@ class StockController extends ControllerAbstract
 {
     public function __construct()
     {
-        $this->currentModule = 'Spider';
+        $this->currentModule = 'Afterwork';
         parent::__construct();
 
         $this->configPath = $this->modulePath . '/config/';
