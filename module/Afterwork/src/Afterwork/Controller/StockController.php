@@ -66,22 +66,4 @@ class StockController extends ControllerAbstract
             echo $file . '<br />' . $targetName . '<br />';
         }
     }    
-
-    /**
-     * Get pointing encode of string
-     *
-     * @param string $string
-     * @param string $wantEncode 
-     * @return string
-     */
-    private function _stringEncode($string, $wantEncode = 'UTF-8')
-    {
-        $encodes = array('ASCII', 'UTF-8', 'GB2312', 'GBK', 'BIG5');
-        $encode = mb_detect_encoding($string, $encodes);
-        if ($encode != $wantEncode) {
-            $string = iconv($encode, $wantEncode, $string);
-        }
-
-        return $string;
-    }
 }
