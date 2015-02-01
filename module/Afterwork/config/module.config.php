@@ -5,5 +5,6 @@ return array(
     'routes' => array(
         'down' => array('/spider', '\Afterwork\Controller\DownController:index'),
         'stock' => array('/stock', '\Afterwork\Controller\StockController:index'),
+        'video' => array('/video', '\Afterwork\Controller\VideoController:index'),
     ),
 );

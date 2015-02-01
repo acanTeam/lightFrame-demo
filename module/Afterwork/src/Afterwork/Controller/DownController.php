@@ -1,5 +1,5 @@
 <?php
-namespace Spider\Controller;
+namespace Afterwork\Controller;
 
 use \Light\Mvc\Controller\ControllerAbstract as ControllerAbstract;
 

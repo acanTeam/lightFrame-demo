@@ -35,22 +35,6 @@ class FilesysController extends ControllerAbstract
         $this->application->layout('phuml', 'common/google_layout', $data);
     }
 
-    private function getFiles($infos, $parentCode = '')
-    {
-        static $files = array();
-        
-        $parentCodeKey = empty($parentCode) ? 'root' : $parentCode;
-        foreach ($infos as $code => $info) {
-            if ($code == '_files') {
-                $files[$parentCodeKey] = $info;
-            } else {
-                $parentCodeNew = empty($parentCode) ? $code : $parentCode  . '_' . $code;
-                $this->getFiles($info, $parentCodeNew);
-            }
-        }
-        return $files;
-    }
-
     public function phuml()
     {
         $commandContent = '';
