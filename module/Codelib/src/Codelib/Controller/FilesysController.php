@@ -84,48 +84,32 @@ class FilesysController extends ControllerAbstract
         return $command . "\n";
     }
 
-    public function removeBom()
+    public function moveBom()
     {
-        $files = Dirs::read($dirName, true);
+        $dirName = 'E:/www/wangcan/ciProject/wwwroot/luxury/dbj/';
+        $files = Directory::read($dirName, true);
         
         foreach ($files as $fileName) {
-        	if (is_file($fileName) && in_array(Files::extension($fileName), array('php', 'html', 'htm'))) {
-        		$fileData = Files::read($fileName);
-        		$fileType = mb_detect_encoding($fileData);//, array('UTF-8', 'GBD', 'LATIN1', 'BIG5'));
-        		if ($fileType == 'UTF-8') {
-        			$fileData = file_get_contents($fileName);
-        			if (preg_match('/^\xEF\xBB\xBF/', $fileData)) {
-        
-        				while (preg_match('/^\xEF\xBB\xBF/', $fileData)) {
-        					$fileData = substr($fileData, 3);
-        				}
-        				//echo $fileName . '<br />';
-        				//Files::delete($fileName);
-        				//copy('E:\kidsDepart\target.php', $fileName);
-        				if (Files::save($fileName, $fileData)) {
-        					echo $fileName . '--' . $fileType . ' convert successed';
-        					echo '<br />';
-        				}
-        			}
-        		}
-        
-        
-        		continue;
-        		if ($fileType != 'UTF-8' && empty(strpos($fileName, '/config/'))) {
-        			echo $fileName . '--' . $fileType . '<br />';
-        		}
-        		continue;
-        		if ($fileType == 'ASCII') {
-        			$fileData = mb_convert_encoding($fileData, 'utf-8', $fileType);
-        			Files::delete($fileName);
-        			copy('E:\kidsDepart\target.php', $fileName);
-        			if (Files::save($fileName, $fileData)) {
-        				echo $fileName . '--' . $fileType . ' convert successed';
-        				echo '<br />';
-        			}
-        			//break;
-        		}
-        	}
+            if (!is_file($fileName) || !in_array(FileInfo::extension($fileName), array('php', 'html', 'htm', 'js', 'css'))) {
+                continue;
+            }
+
+    		$fileData = FileInfo::read($fileName);
+    		$fileType = mb_detect_encoding($fileData);//, array('UTF-8', 'GBD', 'LATIN1', 'BIG5'));
+            echo $fileName . '==='; 
+    		if ($fileType == 'UTF-8') {
+                echo '++';
+    			$fileData = file_get_contents($fileName);
+    			if (preg_match('/^\xEF\xBB\xBF/', $fileData)) {
+    
+    				while (preg_match('/^\xEF\xBB\xBF/', $fileData)) {
+                        echo '---------';
+    					$fileData = substr($fileData, 3);
+    				}
+                    //file_put_contents($fileName, $fileData);
+    			}
+    		}
+            echo '===<br />';
         }
     }
 
