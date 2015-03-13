@@ -145,7 +145,7 @@ class DomainController extends ControllerAbstract
                 'dev.jzmedia' => array('path' => 'wangcan/ciProject/wwwroot/jzmedia'),
                 'dev.passport' => array('path' => 'wangcan/ciProject/wwwroot/passport'),
                 'dev.luxury' => array('path' => 'wangcan/ciProject/wwwroot/luxury'),
-                'dev.www' => array('path' => 'wangcan/ciProject/wwwroot'),
+                'dev.www' => array('path' => 'wangcan/ciProject/wwwroot/website'),
             ),
             'acanstudio' => array(
                 'front' => array('path' => 'acanstudio/webFront'),
