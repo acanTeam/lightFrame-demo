@@ -94,7 +94,7 @@ class DomainController extends ControllerAbstract
                     '#PLACE_HTTP_PATH#' => $baseInfo['httpdPath'],
                     '#PLACE_LOG_PATH#' => $baseInfo['logPath'],
                     '#PLACE_NODE_PORT#' => isset($info['port']) ? $info['port'] : '',
-                    '#PLACE_EXT_INFO#' => isset($info['extInfo']) && isset($textInfos[$info['extInfo']]) ? $textInfos[$info['extInfo']] : '',
+                    '#PLACE_EXT_INFO#' => isset($info['extInfo']) && isset($textInfos[$info['extInfo']]) ? str_replace(array_keys($baseReplace), array_values($baseReplace), $textInfos[$info['extInfo']]) : '',
                 );
                 $domainStrSub = str_replace(array_keys($replaceInfos), array_values($replaceInfos), $domainStrSub);
                 $domainStrSub = str_replace("\r", '', $domainStrSub);
@@ -152,7 +152,7 @@ class DomainController extends ControllerAbstract
                 'ucserver' => array('path' => 'common/ucserver'),
                 'static' => array('path' => 'common/static'),
                 'asset' => array('path' => 'common/asset'),
-                'upload' => array('path' => 'common/upload'),
+                'upload' => array('path' => 'common/upload', 'extInfo' => 'docsUploadExt'),
                 'dphp' => array('path' => 'common/dphp'),
                 'www' => array('path' => 'wangcan/lightFrame-demo/public'),
                 'docs' => array('path' => 'final/docsold', 'extInfo' => 'rewriteDocs'),
@@ -236,8 +236,8 @@ $nodeDomain = <<<NODEDOMAIN
 NODEDOMAIN;
 
 $iammumuExt = <<<IAMMUMUEXT
-    Alias /mumupic "/var/htmlwww/iammumupic"
-    <Directory "/var/htmlwww/iammumupic">
+    Alias /mumupic "#PLACE_WWW_PATH#iammumupic"
+    <Directory "#PLACE_WWW_PATH#iammumupic">
         AllowOverride AuthConfig
         AllowOverride All
         Order allow,deny
@@ -245,6 +245,21 @@ $iammumuExt = <<<IAMMUMUEXT
         Require all granted
     </Directory>    
 IAMMUMUEXT;
+
+$docsUploadExt = <<<DOCSUPLOADEXT
+    Alias /document "#PLACE_WWW_PATH#acanstudio/docs/"
+    <Directory "#PLACE_WWW_PATH#acanstudio/docs/">
+        AllowOverride AuthConfig
+        #AllowOverride All
+        Order allow,deny
+        Allow from all
+        #Require all granted
+    </Directory>
+
+#    RewriteEngine on
+#    RewriteCond $1 !^(document)
+#    RewriteRule   ^/([^/]+)/?(.*)    /$1/_build/html/$2
+DOCSUPLOADEXT;
 
 $rewriteDocs = <<<REWRITEDOCS
     RewriteEngine on
@@ -258,6 +273,7 @@ $textInfos = array(
     'commonDomain' => $commonDomain, 
     'nodeDomain' => $nodeDomain,
     'iammumuExt' => $iammumuExt, 
+    'docsUploadExt' => $docsUploadExt, 
     'rewriteDocs' => $rewriteDocs
 );
 

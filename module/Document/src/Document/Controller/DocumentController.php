@@ -82,6 +82,8 @@ class DocumentController extends ControllerAbstract
     private function _getContent($file)
     {
         $contentSource = file_get_contents($file);
+        $uploadUrl = str_replace($this->docsPath, 'document/', dirname($file)) . '/';
+        $contentSource = str_replace('#UPLOAD_URL#', $this->application->configCommon['uploadUrl'] . $uploadUrl, $contentSource);
         $parsedown = new \Document\Util\Parsedown();
         $content = $parsedown->text($contentSource);
 

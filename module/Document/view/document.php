@@ -56,7 +56,7 @@ $thirds = isset($configs['thirds']) && is_array($configs['thirds']) ? $configs['
         <article>
           <?php if (true) { //$params['date_modified']) { ?>
             <div class="page-header sub-header clearfix">
-              <h1><?php echo $breadCrumb; ?>
+              <h1><?php //echo $breadCrumb; ?>
                 <?php //if ($page['file_editor']) echo '<a href="javascript:;" id="editThis" class="btn">Edit this page</a>'; ?>
               </h1>
               <span style="float: left; font-size: 10px; color: gray;">

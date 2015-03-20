@@ -23,7 +23,7 @@
   </div>
   <div class="row">
 
-    <?php $assetUrlNull = $application->configCommon['assetUrl'] . 'bootstrap/demo/images/null.jpg'; foreach ($infos as $key => $info) { $picture = $application->configCommon['uploadUrl'] . 'document/' . $key . '.jpg'; ?>
+    <?php $assetUrlNull = $application->configCommon['assetUrl'] . 'bootstrap/demo/images/null.jpg'; foreach ($infos as $key => $info) { $picture = $application->configCommon['uploadUrl'] . 'acanstudio/docs/' . $key . '.png'; ?>
   	<div class="col-sm-6 col-md-4 col-lg-3 ">
       <div class="thumbnail">
         <a href="<?php echo $application->domain . 'document/' . $key; ?>" title="<?php echo $key; ?>" target="_blank">
