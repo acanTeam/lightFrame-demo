@@ -9,12 +9,12 @@ return array(
     /*'candlestick' => array(
         'path' => 'E:\www\common\makeLiving\K线图\经典K线组合图解',
     ),*/
-    'kbase' => array(
+    /*'kbase' => array(
         'path' => 'E:\www\common\makeLiving\K线图\K线入门图解教程',
-    ),
-    'market' => array(
+    ),*/
+    /*'market' => array(
         'path' => 'E:\www\common\makeLiving\看盘技巧',
-    ), 
+    ), */
     'term' => array(
         'path' => 'E:\www\common\makeLiving\股票术语',
     ), 

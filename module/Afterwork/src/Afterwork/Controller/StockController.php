@@ -39,6 +39,7 @@ class StockController extends ControllerAbstract
             $urls = $result['url'];
             $titles = $result['title'];
             $len = count($urls);
+            $j = 1;
             for ($i = 0; $i < $len; $i++) {
                 $title = ($i + 1) . '_' . str_replace(array(':', '?'), '', trim($titles[$i])) . '.md';
                 $targetFile = $info['path'] . '/' . $title;
@@ -47,7 +48,8 @@ class StockController extends ControllerAbstract
                     file_put_contents($targetFile, '');
                 }
                 if (filesize($targetFile) < 10) {
-                    echo "<a href='http://www.net767.com{$urls[$i]}' target='_blank'>{$title}</a><br />";
+                    $j++;
+                    echo "{$j}-<a href='http://www.net767.com{$urls[$i]}' target='_blank'>{$title}</a><br />";
                 }
             }
         }
