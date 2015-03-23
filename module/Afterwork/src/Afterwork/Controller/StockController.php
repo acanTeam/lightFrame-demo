@@ -21,6 +21,58 @@ class StockController extends ControllerAbstract
         $this->_createFiles();
     }
 
+    public function map()
+    {
+        $infos = $this->_getConfigInfos();
+        foreach ($infos as $key => $info) {
+            $info['title'] = preg_replace('/^.+[\\\\\\/]/', '', $info['path']);
+            $infos[$key] = $info;
+        }
+
+        $navbarInfos = $this->_getNavbar();
+        $navbarContent = $this->_getNavbarContent($navbarInfos);
+        $data = array(
+            'navbarContent' => $navbarContent,
+            'infos' => $infos,
+            'application' => $this->application,
+        );
+
+        $this->application->layout('stock', 'common/layout', $data);
+    }
+
+    public function listinfo()
+    {
+        $params = func_get_args();
+        $path = isset($params[0]) ? $params[0] : '';
+
+        $currentInfo = $this->_getConfigInfos($path);
+        if (empty($currentInfo)) {
+            $this->application->pass();
+        }
+
+        $path = $currentInfo['path'];
+
+    }
+
+    protected function _getConfigInfos($path = false)
+    {
+        $myInfos = require($this->modulePath . '/config/mystock.php');
+        $netInfos = require($this->modulePath . '/config/net767.php');
+        $infos = array_merge($myInfos, $netInfos);
+
+        if (empty($path)) {
+            $result = $infos;
+        } else {
+            $result = isset($infos[$path]) ? $infos[$path] : false;
+        }
+
+        return $result;
+    }
+
+
+        
+
+
     public function _createFiles()
     {
         $configPath = $this->modulePath . '/config/';
