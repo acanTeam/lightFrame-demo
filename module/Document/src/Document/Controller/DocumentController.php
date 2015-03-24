@@ -46,11 +46,13 @@ class DocumentController extends ControllerAbstract
         $info = $this->documentTool->getDocsInfo($pathInfos);
         $this->baseUrl = $this->application->domain . 'document/' . $info['docs'] . '/';
   
+        $this->currentTitle = '';
         $data = array(
             'breadCrumb' => $this->_getBreadCrumb($info['structureInfos']),
             'navigation' => $this->_getNavigation($info['structureInfos']),
             'fileInfo' => $this->_getContent($info['markdownFile']),
             'application' => $this->application,
+            'currentTitle' => $this->currentTitle,
         );
         $data = array_merge($data, $info);
 
@@ -67,6 +69,7 @@ class DocumentController extends ControllerAbstract
             $subInfos = false;
             foreach ($infos as $key => $info) {
                 if (isset($info['isCurrent']) && $info['isCurrent']) {
+                    $this->currentTitle = $info['title'];
                     $breadCrumb .= $separator . $info['title'];
                     $subInfos = isset($info['subElems']) ? $info['subElems'] : false;
                     break ;

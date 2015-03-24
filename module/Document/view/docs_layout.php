@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html class="no-js" lang="en">
 <head>
-  <title><?php echo 'title'; ?></title>
-  <meta name="description" content="<?php echo 'tagline';?>" />
-  <meta name="author" content="<?php echo 'author'; ?>">
+  <title><?php echo $currentTitle . '_' . $docsInfo['title']; ?></title>
+  <meta name="description" content="<?php echo $docsInfo['description']; ?>" />
+  <meta name="author" content="<?php echo 'acanstudio'; ?>">
   <meta charset="UTF-8">
   <link rel="icon" href="<?php echo $application->configCommon['assetUrl'] . 'document/images/favicon-' . 'blue' . '.png'; ?>" type="image/x-icon">
   <!-- Mobile -->
@@ -19,7 +19,7 @@
 
 <div class="navbar navbar-fixed-top hidden-print">
   <div class="container">
-    <a class="brand navbar-brand pull-left" href="javascript: void(0);"><?php echo $docsInfo['title']; ?></a>
+    <a class="brand navbar-brand pull-left" href="javascript: void(0);"><?php echo $currentTitle . '_' . $docsInfo['title']; ?></a>
     <p class="navbar-text pull-right"><?php echo $docsInfo['description']; ?></p>
   </div>
 </div>

@@ -79,7 +79,7 @@ echo $path;
             'application' => $this->application,
         );
 
-        $this->application->layout('document', 'docs_layout', $data);
+        $this->application->layout('content', 'layout', $data);
     }
 
     private function _getContent($file)
