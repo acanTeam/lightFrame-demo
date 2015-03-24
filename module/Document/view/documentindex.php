@@ -27,7 +27,7 @@
   	<div class="col-sm-6 col-md-4 col-lg-3 ">
       <div class="thumbnail">
         <a href="<?php echo $application->domain . 'document/' . $key; ?>" title="<?php echo $key; ?>" target="_blank">
-        <img class="lazy" src="<?php echo $assetUrlNull; ?>" width="300" height="150" data-src="<?php echo $picture; ?>" alt="<?php echo $key; ?>">
+        <img class="lazy" src="<?php echo $assetUrlNull; ?>" style="height: 150px; width: 300px;" data-src="<?php echo $picture; ?>" alt="<?php echo $key; ?>">
         </a>
         <div class="caption">
           <p><?php echo $info['description']; ?></p>

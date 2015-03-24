@@ -13,6 +13,7 @@ class StockController extends ControllerAbstract
         parent::__construct();
 
         $this->configPath = $this->modulePath . '/config/';
+        $this->configInfos = require($this->configPath . 'local.php');
     }
 
     public function index()
@@ -44,21 +45,86 @@ class StockController extends ControllerAbstract
     {
         $params = func_get_args();
         $path = isset($params[0]) ? $params[0] : '';
-
+echo $path;
         $currentInfo = $this->_getConfigInfos($path);
         if (empty($currentInfo)) {
             $this->application->pass();
         }
 
-        $path = $currentInfo['path'];
+        $this->path = $this->_stringEncode($currentInfo['path'], 'GB2312');
+        $fileInfos = Directory::read($this->path);
+        foreach ($fileInfos as $key => $info) {
+            if (is_dir($info)) {
+                unset($fileInfos[$key]);
+            } else {
+                $subPath = str_replace('\\', '/', $info);
+                $fileInfos[$key] = str_replace('//', '/', $subPath);
+            }
+        }
 
+        $filePath = false;
+        $title = isset($params[1]) ? $this->_stringEncode($params[1], 'GB2312') : false;
+        if (!empty($title)) {
+            $filePath = str_replace('\\', '/', $this->path . '/' . $title);
+            $filePath = str_replace('//', '/', $filePath);
+            $filePath = in_array($filePath, $fileInfos) ? $filePath : false;
+        }
+        $filePath = empty($filePath) ? $fileInfos[0] : $filePath;
+        $this->baseUrl = $this->application->domain . 'stock/listinfo/' . $path . '/';
+  
+        $data = array(
+            'breadCrumb' => '',
+            'navigation' => $this->_getNavigation($fileInfos, $filePath),
+            'fileInfo' => $this->_getContent($filePath),
+            'application' => $this->application,
+        );
+
+        $this->application->layout('document', 'docs_layout', $data);
     }
+
+    private function _getContent($file)
+    {
+        $contentSource = file_get_contents($file);
+        $uploadUrl = str_replace($this->path, 'stock/', dirname($file)) . '/';
+        $contentSource = str_replace('#UPLOAD_URL#', $this->application->configCommon['uploadUrl'] . $uploadUrl, $contentSource);
+        $parsedown = new \Document\Util\Parsedown();
+        $content = $parsedown->text($contentSource);
+
+        $fileInfo = array(
+            'contentSource' => $contentSource, 
+            'content' => $content,
+            'status' => stat($file),
+        );
+
+        return $fileInfo;
+    }
+
+    private function _getNavigation($infos, $currentFile)
+    {
+        $navigation = '<ul class="nav nav-list">';
+
+        foreach ($infos as $key => $info) {
+            $key = preg_replace('/^.+[\\\\\\/]/', '', $info);
+            $key = $this->_stringEncode($key, 'UTF-8');
+            $info = $this->_stringEncode($info, 'UTF-8');
+            $link = $this->baseUrl . $key;
+
+            $activeClass = isset($info) && $currentFile ? ' class="active"' : '';
+            $navigation .= "<li {$activeClass}><a href='{$link}'>{$key}</a></li>";
+        }
+
+        return $navigation . '</ul>';
+    }    
 
     protected function _getConfigInfos($path = false)
     {
         $myInfos = require($this->modulePath . '/config/mystock.php');
         $netInfos = require($this->modulePath . '/config/net767.php');
         $infos = array_merge($myInfos, $netInfos);
+        foreach ($infos as $key => $info) {
+            $info['path'] = $this->configInfos['basePath'] . $info['path'];
+            $infos[$key] = $info;
+        }
 
         if (empty($path)) {
             $result = $infos;
@@ -68,10 +134,6 @@ class StockController extends ControllerAbstract
 
         return $result;
     }
-
-
-        
-
 
     public function _createFiles()
     {

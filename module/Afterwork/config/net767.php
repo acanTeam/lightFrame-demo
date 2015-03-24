@@ -1,21 +1,21 @@
 <?php
 return array(
     'way42' => array(
-        'path' => 'E:\www\common\makeLiving\股票入门\037四十二种股票投资方法策略',
+        'path' => '股票入门\037四十二种股票投资方法策略',
     ),
     'start300' => array(
-        'path' => 'E:\www\common\makeLiving\股票入门\053新生300天图解教程',
+        'path' => '股票入门\053新生300天图解教程',
     ),
     'candlestick' => array(
-        'path' => 'E:\www\common\makeLiving\K线图\经典K线组合图解',
+        'path' => 'K线图\经典K线组合图解',
     ),
     'kbase' => array(
-        'path' => 'E:\www\common\makeLiving\K线图\K线入门图解教程',
+        'path' => 'K线图\K线入门图解教程',
     ),
     'market' => array(
-        'path' => 'E:\www\common\makeLiving\看盘技巧',
+        'path' => '看盘技巧',
     ), 
     'term' => array(
-        'path' => 'E:\www\common\makeLiving\股票术语',
+        'path' => '股票术语',
     ), 
 );
