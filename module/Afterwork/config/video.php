@@ -1,5 +1,5 @@
 <?php
 return array(
-    'moviePath' => 'H:\movie',
-    'lecturePath' => 'H:\other',
+    'moviePath' => 'I:\movie',
+    'lecturePath' => 'I:\other',
 );

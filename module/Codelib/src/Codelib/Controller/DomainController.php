@@ -203,8 +203,8 @@ $virtualDomain = <<<VIRTUALDOMAIN
 VIRTUALDOMAIN;
 
 $logStr = $isLocal ? '' : <<<LOGSTR
-    ErrorLog "|#PLACE_HTTP_PATH#bin/rotatelogs #PLACE_LOG_PATH#%Y-%m-%d_#PLACE_DOMAIN#-error_log 86400"
-    CustomLog "|#PLACE_HTTP_PATH#bin/rotatelogs #PLACE_LOG_PATH#%Y-%m-%d_#PLACE_DOMAIN#-access_log 86400" common
+    ErrorLog "|#PLACE_HTTP_PATH#bin/rotatelogs #PLACE_LOG_PATH#%Y-%m-%d_#PLACE_DOMAIN_BASE#-error_log 864000"
+    CustomLog "|#PLACE_HTTP_PATH#bin/rotatelogs #PLACE_LOG_PATH#%Y-%m-%d_#PLACE_DOMAIN_BASE#-access_log 864000" common
 LOGSTR;
 
 $commonDomain = <<<COMMONDOMAIN
