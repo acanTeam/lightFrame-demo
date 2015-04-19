@@ -45,7 +45,7 @@ class StockController extends ControllerAbstract
     {
         $params = func_get_args();
         $path = isset($params[0]) ? $params[0] : '';
-echo $path;
+
         $currentInfo = $this->_getConfigInfos($path);
         if (empty($currentInfo)) {
             $this->application->pass();
@@ -85,8 +85,9 @@ echo $path;
     private function _getContent($file)
     {
         $contentSource = file_get_contents($file);
-        $uploadUrl = str_replace($this->path, 'stock/', dirname($file)) . '/';
-        $contentSource = str_replace('#UPLOAD_URL#', $this->application->configCommon['uploadUrl'] . $uploadUrl, $contentSource);
+        $uploadUrl = str_replace($this->configInfos['basePath'], $this->application->configCommon['uploadUrl'] . 'stock/', dirname($file));
+		$uploadUrl = $this->_stringEncode($uploadUrl, 'UTF-8');
+        $contentSource = str_replace('#UPLOAD_URL#', $uploadUrl, $contentSource);
         $parsedown = new \Document\Util\Parsedown();
         $content = $parsedown->text($contentSource);
 
@@ -142,6 +143,9 @@ echo $path;
 
         $infos = require($configPath . 'net767.php');
         foreach ($infos as $key => $info) {
+            if ($info['finished']) {
+                //continue;
+            }
             $fileFull = $this->_stringEncode($dataPath . $key . '.txt', 'GBK');
             if (!file_exists($fileFull)) {
                 continue;
@@ -156,15 +160,26 @@ echo $path;
             $j = 1;
             for ($i = 0; $i < $len; $i++) {
                 $title = ($i + 1) . '_' . str_replace(array(':', '?'), '', trim($titles[$i])) . '.md';
-                $targetFile = $info['path'] . '/' . $title;
+                $titlePre = $i + 1;
+                $titlePre = str_pad($titlePre, 3, '0', STR_PAD_LEFT);
+                $title1 = $titlePre . '_' . str_replace(array(':', '?', ' '), '', trim($titles[$i])) . '.md';
+                $targetFile1 = $this->configInfos['basePath'] . $info['path'] . '/' . $title1;
+                $targetFile = $this->configInfos['basePath'] . $info['path'] . '/' . $title;
                 $targetFile = $this->_stringEncode($targetFile, 'GBK');
-                if (!file_exists($targetFile)) {
-                    file_put_contents($targetFile, '');
+                $targetFile1 = $this->_stringEncode($targetFile1, 'GBK');
+                if (!file_exists($targetFile1)) {
+                    file_put_contents($targetFile1, '');
                 }
+                if ($targetFile != $targetFile1 && file_exists($targetFile)) {
+                    $content = file_get_contents($targetFile);
+                    file_put_contents($targetFile1, $content);
+                    unlink($targetFile);
+                }
+                /*
                 if (filesize($targetFile) < 10) {
                     $j++;
                     echo "{$j}-<a href='http://www.net767.com{$urls[$i]}' target='_blank'>{$title}</a><br />";
-                }
+                }*/
             }
         }
         
