@@ -1,0 +1,7 @@
+*
+!.gitignore
+!evil.zip
+!function.php
+!template_controller.txt
+!template_model.txt
+!template_view.txt

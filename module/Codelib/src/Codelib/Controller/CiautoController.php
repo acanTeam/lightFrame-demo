@@ -20,7 +20,8 @@ class CiautoController extends ControllerAbstract
         $templates['view'] = file_get_contents($this->modulePath . '/data/template_view.txt');
         $templates['model'] = file_get_contents($this->modulePath . '/data/template_model.txt');
         
-        $databases = array('workshop_new_luxury', 'workshop_new_pay', 'workshop_new_passport');
+        //$databases = array('workshop_new_luxury', 'workshop_new_pay', 'workshop_new_passport');
+        $databases = array('workspace_ilc');
         foreach ($databases as $database) {
             $tables = $this->getTables($database);
             if (is_array($tables) && !empty($tables)) {
@@ -54,7 +55,7 @@ class CiautoController extends ControllerAbstract
             $replaceStrs = array('', $fieldInfos, ucfirst($tableBase), $tableBase);
             $content = str_replace($targetStrs, $replaceStrs, $contentBase);
         
-            $filePath = __DIR__ . '/data/' . $database . '_' . $template;
+            $filePath = $this->modulePath . '/data/ci/' . $database . '_' . $template;
             if (!is_dir($filePath)) {
                 mkdir($filePath);
             }

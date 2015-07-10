@@ -146,6 +146,10 @@ class DomainController extends ControllerAbstract
                 'dev.passport' => array('path' => 'wangcan/ciProject/wwwroot/passport'),
                 'dev.luxury' => array('path' => 'wangcan/ciProject/wwwroot/luxury'),
                 'dev.www' => array('path' => 'wangcan/ciProject/wwwroot/website'),
+                'dev.lc' => array('path' => 'workspace/webliangcang'),
+                'dev.lcsell' => array('path' => 'workspace/liangcang_sell/html'),
+                'dev.lcapp' => array('path' => 'workspace/appiliangcang/html'),
+                'dev.saleproxy' => array('path' => 'wangcan/ciProject/wwwroot/saleproxy'),
             ),
             'acanstudio' => array(
                 'front' => array('path' => 'acanstudio/webFront'),

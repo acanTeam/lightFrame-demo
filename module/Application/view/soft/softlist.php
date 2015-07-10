@@ -73,6 +73,11 @@ $otherSoftInfos = array(
     'mongodb', 'Robomongo', 'rubyinstaller', 'nodejs'
 );
 
+$nouseSoftInfos = array(
+	'ZendStudio', 'Dreamweaver', 'EditPlus', 'MindManager',
+	'staruml', 'WinRAR', 'xmind', 'poedit',
+);
+
 $softInfos = array(
     'system' => array(
         'name' => '系统相关软件',
@@ -93,6 +98,11 @@ $softInfos = array(
         'name' => '其他软件',
         'description' => '',
         'infos' => $otherSoftInfos,
+    ),
+    'nouse' => array(
+        'name' => '曾经使用过的',
+        'description' => '',
+        'infos' => $nouseSoftInfos,
     )
 );
 ?>
