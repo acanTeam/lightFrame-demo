@@ -21,7 +21,8 @@ class CiautoController extends ControllerAbstract
         $templates['model'] = file_get_contents($this->modulePath . '/data/template_model.txt');
         
         //$databases = array('workshop_new_luxury', 'workshop_new_pay', 'workshop_new_passport');
-        $databases = array('workspace_ilc');
+        //$databases = array('workspace_ilc');
+        $databases = array('workbench_website', 'workbench_pay', 'workbench_passport');
         foreach ($databases as $database) {
             $tables = $this->getTables($database);
             if (is_array($tables) && !empty($tables)) {
@@ -59,7 +60,7 @@ class CiautoController extends ControllerAbstract
             if (!is_dir($filePath)) {
                 mkdir($filePath);
             }
-            $fileName = $filePath . '/' . $tableBase . 'model.php';
+            $fileName = $filePath . '/' . ucfirst($tableBase) . 'model.php';
             $fileName = $template == 'model' ? $fileName : str_replace('model', '', $fileName);
             
             echo $fileName . '<br />';
@@ -78,7 +79,8 @@ class CiautoController extends ControllerAbstract
         while ($row = mysql_fetch_array($result)) {
             $field = $row['COLUMN_NAME'];
             $comment = empty($row['COLUMN_COMMENT']) ? $field : $row['COLUMN_COMMENT'];
-            $string .=  "            '{$field}' => array('name' => '{$comment}'),\n";
+            //$string .=  "            '{$field}' => array('name' => '{$comment}'),\n";
+            $string .=  "            '{$field}' => '{$comment}',\n";
             $fieldInfos['fields'][$row['COLUMN_NAME']] = $row['COLUMN_COMMENT'];
             $fieldChange .= $field == 'id' ? '' : "'{$field}', ";
         }

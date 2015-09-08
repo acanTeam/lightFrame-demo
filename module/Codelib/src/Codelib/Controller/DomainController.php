@@ -153,18 +153,13 @@ class DomainController extends ControllerAbstract
             ),
             'acanstudio' => array(
                 'front' => array('path' => 'acanstudio/webFront'),
-                'ucserver' => array('path' => 'common/ucserver'),
                 'static' => array('path' => 'common/static'),
                 'asset' => array('path' => 'common/asset'),
                 'upload' => array('path' => 'common/upload', 'extInfo' => 'docsUploadExt'),
                 'dphp' => array('path' => 'common/dphp'),
+
                 'www' => array('path' => 'wangcan/lightFrame-demo/public'),
-                'docs' => array('path' => 'final/docsold', 'extInfo' => 'rewriteDocs'),
                 'blog' => array('path' => 'acanstudio/blog/public'),
-    
-                'test1' => array('path' => 'test/test1/public'),
-                'test2' => array('path' => 'test/test2/public'),
-                'test3' => array('path' => 'test/test3'),
     
                 'demo.luxury' => array('path' => 'final/ciProject/wwwroot/luxury'),
                 'demo.statistic' => array('path' => 'final/ciProject/wwwroot/statistic'),
