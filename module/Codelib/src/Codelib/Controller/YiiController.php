@@ -63,8 +63,8 @@ class YiiController extends ControllerAbstract
         foreach ($templates as $template => $contentBase) {
             
             $fieldInfos = $this->getFieldInfos($database, $table);
-            $targetStrs = array("\r", '#FIELDINFOS#', '#MODULE#', '#CLASS#', '#TABLE#');
-            $replaceStrs = array('', $fieldInfos, $databaseBase, $tableFirst, $tableBase);
+            $targetStrs = array("\r", '#FIELDINFOS#', '#MODULE#', '#F_MODULE#', '#CLASS#', '#TABLE#');
+            $replaceStrs = array('', $fieldInfos, $databaseBase, ucfirst($databaseBase), $tableFirst, $tableBase);
             $content = str_replace($targetStrs, $replaceStrs, $contentBase);
         
             $filePath = $this->modulePath . '/data/yii2/' . $databaseBase . '/' . str_replace('_', '/', $template);
