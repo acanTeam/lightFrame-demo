@@ -16,12 +16,14 @@ class YiiController extends ControllerAbstract
 
     public function index()
     {
-        $templates['controller'] = file_get_contents($this->modulePath . '/data/controller.txt');
-        $templates['model'] = file_get_contents($this->modulePath . '/data/model.txt');
-        $templates['model_search'] = file_get_contents($this->modulePath . '/data/model_search.txt');
+        $templates['controllers'] = file_get_contents($this->modulePath . '/data/controller.txt');
+        $templates['models'] = file_get_contents($this->modulePath . '/data/model.txt');
+        $templates['models_searchs'] = file_get_contents($this->modulePath . '/data/model_search.txt');
         $templates['view'] = $this->modulePath . '/data/views';
         
-        $databases = array('workbench_website', 'workbench_paytrade', 'workbench_passport');
+        //$databases = array('workbench_website', 'workbench_paytrade', 'workbench_passport');
+        //$databases = array('workspace_gallerycms', 'workspace_spider');
+        $databases = array('workspace_shoot');
         foreach ($databases as $database) {
             $tables = $this->getTables($database);
             if (is_array($tables) && !empty($tables)) {
@@ -48,7 +50,7 @@ class YiiController extends ControllerAbstract
     {
         $tableBase = substr($table, strpos($table, '_') + 1);
 		$tableFirst = str_replace(' ', '', ucwords(str_replace('_', ' ', $tableBase)));
-		$databaseBase = str_replace('workbench_', '', $database);
+		$databaseBase = str_replace('workspace_', '', $database);
 
 		$views = $templates['view'];
 		$viewsTarget = dirname($views) . '/yii2/' . $databaseBase . '/views/' . str_replace('_', '-', $tableBase);
@@ -72,7 +74,7 @@ class YiiController extends ControllerAbstract
                 mkdir($filePath, 0777, true);
             }
             $fileName = $filePath . '/' . $tableFirst . 'Controller.php';
-            $fileName = $template == 'controller' ? $fileName : str_replace('Controller', '', $fileName);
+            $fileName = $template == 'controllers' ? $fileName : str_replace('Controller', '', $fileName);
             
             echo $fileName . '<br />';
         
